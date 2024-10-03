@@ -2,26 +2,52 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const FileUpload = () => {
-  const [file, setFile] = useState(null);  // State to hold the selected file
-  const [uploadProgress, setUploadProgress] = useState(null); // State to track upload progress
-  const [responseData, setResponseData] = useState(null);  // State to hold server response
-  const [errorMessage, setErrorMessage] = useState(null);  // State to hold error messages
+  // State for file inputs
+  const [pnmlFilesSideA, setPnmlFilesSideA] = useState([]);  // Side A .pnml files
+  const [pnmlFilesSideB, setPnmlFilesSideB] = useState([]);  // Side B .pnml files
+  const [xesFile, setXesFile] = useState(null);  // Optional .xes file
 
-  // Handle file input change
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);  // Get the selected file
+  // State for feedback and response
+  const [uploadProgress, setUploadProgress] = useState(null); // Track upload progress
+  const [responseData, setResponseData] = useState(null);  // Hold server response
+  const [errorMessage, setErrorMessage] = useState(null);  // Error messages
+
+  // Handle .pnml files for Side A
+  const handlePnmlFilesSideAChange = (e) => {
+    setPnmlFilesSideA(e.target.files);
+  };
+
+  // Handle .pnml files for Side B
+  const handlePnmlFilesSideBChange = (e) => {
+    setPnmlFilesSideB(e.target.files);
+  };
+
+  // Handle .xes file
+  const handleXesFileChange = (e) => {
+    setXesFile(e.target.files[0]);
   };
 
   // Handle file upload
   const handleFileUpload = async (e) => {
     e.preventDefault();  // Prevent default form submission
-    if (!file) {
-      setErrorMessage("Please select a file before uploading");
-      return;
+
+    // Create a FormData object to hold the files
+    const formData = new FormData();
+
+    // Append multiple pnml files for Side A
+    for (let i = 0; i < pnmlFilesSideA.length; i++) {
+      formData.append('pnml_side_a', pnmlFilesSideA[i]);
     }
 
-    const formData = new FormData();  // Create a FormData object to hold the file
-    formData.append('file', file);  // Append the file to the FormData
+    // Append multiple pnml files for Side B
+    for (let i = 0; i < pnmlFilesSideB.length; i++) {
+      formData.append('pnml_side_b', pnmlFilesSideB[i]);
+    }
+
+    // Optionally append the .xes file
+    if (xesFile) {
+      formData.append('xes_file', xesFile);
+    }
 
     try {
       const response = await axios.post('/upload', formData, {
@@ -40,16 +66,24 @@ const FileUpload = () => {
       setErrorMessage(null);  // Clear error messages
     } catch (error) {
       // Handle error response
-      setErrorMessage("File upload failed. Please try again.");
+      setErrorMessage(error.response.data.error);  // Save error message in state
       setUploadProgress(null);
     }
   };
 
   return (
     <div>
-      <h2>Upload .pnml File</h2>
+      <h2>Upload Multiple .pnml Files and Optional .xes File</h2>
       <form onSubmit={handleFileUpload}>
-        <input type="file" accept=".pnml" onChange={handleFileChange} />
+        <h3>Side A (.pnml Files)</h3>
+        <input type="file" accept=".pnml" multiple onChange={handlePnmlFilesSideAChange} />
+
+        <h3>Side B (.pnml Files)</h3>
+        <input type="file" accept=".pnml" multiple onChange={handlePnmlFilesSideBChange} />
+
+        <h3>Optional .xes File</h3>
+        <input type="file" accept=".xes" onChange={handleXesFileChange} />
+
         <button type="submit">Upload</button>
       </form>
 
@@ -57,12 +91,11 @@ const FileUpload = () => {
       {responseData && (
         <div>
           <h3>Server Response:</h3>
-          <p>Places: {responseData.places}</p>
-          <p>Transitions: {responseData.transitions}</p>
-          <p>Arcs: {responseData.arcs}</p>
+          <p>Side A - Places: {responseData.lpms_a.total_places}, Transitions: {responseData.lpms_a.total_transitions}, Arcs: {responseData.lpms_a.total_arcs}</p>
+          <p>Side B - Places: {responseData.lpms_b.total_places}, Transitions: {responseData.lpms_b.total_transitions}, Arcs: {responseData.lpms_b.total_arcs}</p>
+          {responseData.xes && <p>XES Data: {responseData.xes}</p>}
         </div>
       )}
-
       {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}  {/* Show error message */}
     </div>
   );
