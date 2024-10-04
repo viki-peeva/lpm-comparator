@@ -1,18 +1,18 @@
 from .conformance_computation import compute_conformance_measures
 from .similarity_computation import compute_similarity_measures
 from typing import List, Optional
-from .lpm import LPM
+from .lpm import LPMSet
 from pm4py.objects.log.obj import EventLog
 
 def calculate_report(
-    lpms_a: List[LPM],
-    lpms_b: List[LPM],
+    set_a: LPMSet,
+    set_b: LPMSet,
     event_log: Optional[EventLog]
 ):
     # Create a dictionary to store the results of the comparison
     report = {}
 
-    compute_similarity_measures()
+    compute_similarity_measures(set_a, set_b)
 
     if event_log is not None:
         #compute_conformance_measures()
@@ -27,7 +27,7 @@ def calculate_report(
     total_places_a = 0
     total_transitions_a = 0
     total_arcs_a = 0
-    for lpm in lpms_a:
+    for lpm in set_a.lpms:
         total_arcs_a += len(lpm.net.arcs)
         total_places_a += len(lpm.net.places)
         total_transitions_a += len(lpm.net.transitions)
@@ -35,7 +35,7 @@ def calculate_report(
     total_places_b = 0
     total_transitions_b = 0
     total_arcs_b = 0
-    for lpm in lpms_b:
+    for lpm in set_b.lpms:
         total_arcs_b += len(lpm.net.arcs)
         total_places_b += len(lpm.net.places)
         total_transitions_b += len(lpm.net.transitions)

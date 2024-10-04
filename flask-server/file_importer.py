@@ -1,7 +1,7 @@
 import os
 from werkzeug.utils import secure_filename
 import pm4py
-from lpm_set_comparison_python.lpm import LPM
+from lpm_set_comparison_python.lpm import LPM, LPMSet
 
 UPLOAD_FOLDER = './uploads'
 
@@ -21,8 +21,8 @@ def convert_pnml_files(pnml_files):
 
         Returns
         -------
-        list of tuple
-            The list of Petri nets.
+        LPMSet
+            The set of Petri nets.
         
     """
     lpms = []
@@ -40,7 +40,7 @@ def convert_pnml_files(pnml_files):
                 raise Exception(f"Error processing PNML file: {str(e)}")
         else:
             raise Exception(f"Invalid file extension for {pnml_file.filename}. Allowed extensions are {ALLOWED_EXTENSIONS_PNML}")
-    return lpms
+    return LPMSet(lpms)
 
 def convert_xes_file(xes_file):
     """Converts the uploaded XES file to an event log.
@@ -101,8 +101,8 @@ def convert_files(pnml_files_side_a, pnml_files_side_b, xes_file):
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
 
-    lpms_a = convert_pnml_files(pnml_files_side_a)
-    lpms_b = convert_pnml_files(pnml_files_side_b)
+    lpmset_a = convert_pnml_files(pnml_files_side_a)
+    lpmset_b = convert_pnml_files(pnml_files_side_b)
     event_log = convert_xes_file(xes_file) if xes_file else None
 
-    return lpms_a, lpms_b, event_log
+    return lpmset_a, lpmset_b, event_log
