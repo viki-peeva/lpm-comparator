@@ -46,11 +46,11 @@ def get_report():
     serialized_lpms_a = session.get('lpmset_a')
     serialized_lpms_b = session.get('lpmset_b')
 
-    lpmset_a = LPMSet.deserialize(serialized_lpms_a) if serialized_lpms_a else None
+    lpmset_a : LPMSet = LPMSet.deserialize(serialized_lpms_a) if serialized_lpms_a else None
     lpmset_b = LPMSet.deserialize(serialized_lpms_b) if serialized_lpms_b else None
 
     if lpmset_a is not None:
-        print(lpmset_a.get_combined_eventually_follows_set())
+        print(lpmset_a.get_eventually_follows_set())
 
     if report is None:
         return jsonify({"error": "No report found"}), 404

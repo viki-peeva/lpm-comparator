@@ -62,7 +62,7 @@ class LPMSet:
     def deserialize(serialized):
         return pickle.loads(serialized)
     
-    def get_combined_traces(self):
+    def get_traces(self):
         if self.combined_traces is None:
             combined_traces = set()
             for lpm in self.lpms:
@@ -71,7 +71,7 @@ class LPMSet:
 
         return self.combined_traces
     
-    def get_combined_eventually_follows_set(self):
+    def get_eventually_follows_set(self):
         if self.combined_eventually_follows_set is None:
             combined_eventually_follows_set = set()
             for lpm in self.lpms:
