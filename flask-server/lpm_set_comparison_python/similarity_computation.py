@@ -82,5 +82,13 @@ def compute_similarity_measures(set_a: LPMSet, set_b: LPMSet):
     #print(compute_eventually_follows_similarity(set_a, set_b))
     #print(compute_trace_similarity_perfect(set_a, set_b))
     a_subset_b, b_subset_a = check_subset(np.array(compute_pairwise_similarity_measures(set_a, set_b, compute_trace_similarity_leven)))
-    print(f"Subset A in B: {a_subset_b}")
-    print(f"Subset B in A: {b_subset_a}")
+    
+    results = {
+        "trace_similarity": compute_trace_similarity_leven(set_a, set_b),
+        "eventually_follows_similarity": compute_eventually_follows_similarity(set_a, set_b),
+        "trace_similarity_perfect": compute_trace_similarity_perfect(set_a, set_b),
+        "a_subset_b": f"{a_subset_b}",
+        "b_subset_a": f"{b_subset_a}"
+    }
+
+    return results

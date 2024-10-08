@@ -12,10 +12,12 @@ def calculate_report(
     # Create a dictionary to store the results of the comparison
     report = {}
 
-    #compute_similarity_measures(set_a, set_b)
+    similarity_report = compute_similarity_measures(set_a, set_b)
+
+    report["similarity"] = similarity_report
 
     if event_log is not None:
-        compute_conformance_measures(set_a, set_b, event_log)
+        #compute_conformance_measures(set_a, set_b, event_log)
         report["xes"] = {
             "traces": len(event_log)
         }
@@ -40,7 +42,7 @@ def calculate_report(
         total_places_b += len(lpm.net.places)
         total_transitions_b += len(lpm.net.transitions)
 
-    report = {
+    report["basic"] = {
         "lpms_a": {
             "total_places": total_places_a,
             "total_transitions": total_transitions_a,
