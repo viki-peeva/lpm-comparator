@@ -6,6 +6,7 @@ import numpy as np
 def compute_conformance_measures(set_a: LPMSet, set_b: LPMSet, event_log: EventLog):
     #print(f"Event log: {event_log}")
     #test_can_event_be_replayed_on_model()
+    
     coverage_a, duplicate_coverage_a = compute_event_coverage(event_log, set_a)
     coverage_b, duplicate_coverage_b = compute_event_coverage(event_log, set_b)
 
@@ -85,7 +86,8 @@ def can_event_be_replayed_on_model(event_idx, trace: Tuple[str], model: LPM):
         index_set = []
         last_trace_index_before_skip = None
         last_lpm_index_before_skip = None
-        for i in range(0, len(lpm_trace),1):
+        i = 0
+        while i < len(lpm_trace):
             lpm_event = lpm_trace[i]
             if cur_trace_idx >= len(trace):
                 if last_trace_index_before_skip is None:
@@ -105,6 +107,8 @@ def can_event_be_replayed_on_model(event_idx, trace: Tuple[str], model: LPM):
 
                     index_set.append(cur_trace_idx)
                     cur_trace_idx += 1
+                    i += 1
+                    continue
 
             if lpm_event == trace[event_idx] and cur_trace_idx <= event_idx:
                 index_set.append(event_idx)
@@ -117,7 +121,7 @@ def can_event_be_replayed_on_model(event_idx, trace: Tuple[str], model: LPM):
                     cur_trace_idx += 1
                 if cur_trace_idx >= len(trace):
                     if last_trace_index_before_skip is not None:
-                        i = last_lpm_index_before_skip -1
+                        i = last_lpm_index_before_skip
                         continue
                     else:
                         index_set = []
@@ -125,6 +129,7 @@ def can_event_be_replayed_on_model(event_idx, trace: Tuple[str], model: LPM):
                 
                 index_set.append(cur_trace_idx)
                 cur_trace_idx += 1
+            i += 1
                 
         
         if len(index_set) > 0:
