@@ -4,6 +4,8 @@ from file_importer import convert_files
 from lpm_set_comparison_python.main import calculate_report
 from lpm_set_comparison_python.lpm import LPMSet
 
+from lpm_set_comparison_python.conformance_computation import test_can_event_be_replayed_on_model
+
 app = Flask(__name__)
 
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -49,12 +51,14 @@ def get_report():
     lpmset_a : LPMSet = LPMSet.deserialize(serialized_lpms_a) if serialized_lpms_a else None
     lpmset_b = LPMSet.deserialize(serialized_lpms_b) if serialized_lpms_b else None
 
-    if lpmset_a is not None:
-        print(lpmset_a.get_eventually_follows_set())
+    #if lpmset_a is not None:
+        #print(lpmset_a.get_eventually_follows_set())
 
     if report is None:
         return jsonify({"error": "No report found"}), 404
     return jsonify(report)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    while True:
+        test_can_event_be_replayed_on_model()
+    #app.run(debug=True)
