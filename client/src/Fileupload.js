@@ -105,15 +105,19 @@ const FileUpload = () => {
           <p>Side A - Places: {responseData.basic.lpms_a.total_places}, Transitions: {responseData.basic.lpms_a.total_transitions}, Arcs: {responseData.basic.lpms_a.total_arcs}</p>
           <p>Side B - Places: {responseData.basic.lpms_b.total_places}, Transitions: {responseData.basic.lpms_b.total_transitions}, Arcs: {responseData.basic.lpms_b.total_arcs}</p>
           {responseData.xes && <p>Event Log Length: {responseData.xes}</p>}
-          <h3>Similarity Measures</h3>
-          <p>Trace Sim (Leven): {responseData.similarity.trace_similarity}</p>
-          <p>Eventually Follows Sim: {responseData.similarity.eventually_follows_similarity}</p>
-          <p>Exact Trace Sim: {responseData.similarity.trace_similarity_perfect}</p>
-          {responseData.similarity.a_subset_b && responseData.similarity.a_subset_b === "True" && (
-            <p>Set A is a subset of Set B</p>
-          )}
-          {responseData.similarity.a_subset_b && responseData.similarity.a_subset_b === "True" && (
-            <p>Set A is a subset of Set B</p>
+          {responseData.similarity && (
+            <>
+            <h3>Similarity Measures</h3>
+            <p>Trace Sim (Leven): {responseData.similarity.trace_similarity}</p>
+            <p>Eventually Follows Sim: {responseData.similarity.eventually_follows_similarity}</p>
+            <p>Exact Trace Sim: {responseData.similarity.trace_similarity_perfect}</p>
+            {responseData.similarity.a_subset_b && responseData.similarity.a_subset_b === "True" && (
+              <p>Set A is a subset of Set B</p>
+            )}
+            {responseData.similarity.a_subset_b && responseData.similarity.a_subset_b === "True" && (
+              <p>Set A is a subset of Set B</p>
+            )}
+            </>
           )}
           {responseData.conformance && ( 
             <>
