@@ -1,23 +1,39 @@
 from .lpm import LPMSet, LPM
 from pm4py.objects.log.obj import EventLog, Trace, Event
-from typing import Tuple
+from typing import Tuple, List
 import numpy as np
 import pm4py
 
 def compute_conformance_measures(set_a: LPMSet, set_b: LPMSet, event_log: EventLog):
-    coverage_a, duplicate_coverage_a = compute_event_coverage(event_log, set_a)
-    coverage_b, duplicate_coverage_b = compute_event_coverage(event_log, set_b)
+    traces = get_traces_from_event_log(event_log)
+
+    coverage_a, duplicate_coverage_a = compute_event_coverage(traces, set_a)
+    coverage_b, duplicate_coverage_b = compute_event_coverage(traces, set_b)
+    
+    fitness_precision_values_a = []
+    fitness_precision_values_b = []
+
+    for lpm in set_a.lpms:
+        fitness, precision = compute_fitness_precision_on_subtraces(traces, lpm)
+        fitness_precision_values_a.append((fitness["averageFitness"], precision))
+    
+    for lpm in set_b.lpms:
+        fitness, precision = compute_fitness_precision_on_subtraces(traces, lpm)
+        fitness_precision_values_b.append((fitness["averageFitness"], precision))
+
 
     results = {
         "coverage_a": coverage_a,
         "duplicate_coverage_a": duplicate_coverage_a,
+        "fitness_precision_values_a": fitness_precision_values_a,
         "coverage_b": coverage_b,
-        "duplicate_coverage_b": duplicate_coverage_b
+        "duplicate_coverage_b": duplicate_coverage_b,
+        "fitness_precision_values_b": fitness_precision_values_b
     }
     return results
 
-def compute_event_coverage(event_log: EventLog, lpms: LPMSet):
-    trace_events_coverage = compute_replayable_events_on_log(event_log, lpms)
+def compute_event_coverage(traces: List[Tuple[str]], lpms: LPMSet):
+    trace_events_coverage = compute_replayable_events_on_log(traces, lpms)
     total_events = 0
     total_covered_events = 0
     total_duplicate_events = 0
@@ -36,8 +52,7 @@ def compute_event_coverage(event_log: EventLog, lpms: LPMSet):
 
     return coverage, duplicate_coverage
 
-def compute_replayable_events_on_log(event_log: EventLog, lpms: LPMSet):
-    traces = get_traces_from_event_log(event_log)
+def compute_replayable_events_on_log(traces: List[Tuple[str]], lpms: LPMSet):
     trace_events_coverage = [None] * len(traces)
     for i, trace in enumerate(traces):
         trace_events_coverage[i] = compute_replayable_events_on_trace_set(trace, lpms)
@@ -160,6 +175,10 @@ def get_projected_trace_on_model(trace: Tuple[str], model: LPM):
 
 def compute_fitness_precision_on_subtraces(traces, model: LPM):
     subtraces = get_subtraces_for_model(traces, model)
+
+    if len(subtraces) == 0:
+        return 0, 0
+
     event_log = create_event_log_from_traces(subtraces)
 
     fitness =  pm4py.fitness_alignments(event_log, model.net, model.im, model.fm)
@@ -181,6 +200,8 @@ def get_subtraces_for_model(traces, model: LPM):
             for end_idx in end_indices:
                 if start_idx < end_idx:
                     subtraces.append(get_projected_trace_on_model(trace[start_idx:end_idx+1], model))
+    
+    return subtraces
 
 def create_event_log_from_traces(traces_list):
     event_log = EventLog()
