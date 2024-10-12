@@ -15,6 +15,7 @@ def calculate_report(
     similarity_report = compute_similarity_measures(set_a, set_b)
 
     report["similarity"] = similarity_report
+    print("Computed similarity measures")
 
     if event_log is not None:
         report["conformance"] = compute_conformance_measures(set_a, set_b, event_log)

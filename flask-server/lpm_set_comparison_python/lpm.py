@@ -13,6 +13,8 @@ class LPM:
         self.traces = None
         self.log = None
         self.eventually_follows_set = None
+        self.fitness = None
+        self.precision = None
         #self.get_eventually_follows_set()
 
     def __repr__(self):
