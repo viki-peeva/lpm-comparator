@@ -1,5 +1,6 @@
 from .conformance_computation import compute_conformance_measures
 from .similarity_computation import compute_similarity_measures
+from .aggregation import get_aggregated_measures
 from typing import List, Optional
 from .lpm import LPMSet
 from pm4py.objects.log.obj import EventLog
@@ -19,6 +20,9 @@ def calculate_report(
 
     if event_log is not None:
         report["conformance"] = compute_conformance_measures(set_a, set_b, event_log)
+        print("Computed conformance measures")
+        matchings = similarity_report["matchings"]
+        report["aggregation"] = get_aggregated_measures(set_a, set_b, matchings, measure="fitness")
         
     # Calculate the comparison results
     # Compare the LPMS from Side A and Side B

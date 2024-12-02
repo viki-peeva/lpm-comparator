@@ -71,7 +71,26 @@ def check_subset(similarity_matrix: np.ndarray, sim_threshold= 0.9, subset_thres
     row_ratio = np.sum(row_max) / len(row_max)
     col_ratio = np.sum(col_max) / len(col_max)
 
-    return row_ratio > subset_threshold, col_ratio > subset_threshold
+    return row_ratio >= subset_threshold, col_ratio >= subset_threshold
+
+def create_symmetric_optimal_matching(similarity_matrix: np.ndarray):
+    """Creates a symmetric optimal matching from a similarity matrix
+        Returns a list of tuples, where each tuple is a pair of indices that are matched.
+    """
+    row_ind, col_ind = linear_sum_assignment(similarity_matrix, maximize=True)
+    return list(zip(row_ind.tolist(), col_ind.tolist()))
+
+def create_asymmetric_optimal_matching(similarity_matrix: np.ndarray):
+    """Creates an asymmetric optimal matching from a similarity matrix
+        Returns a list of tuples, where each tuple is a pair of indices that are matched.
+        Each row is matched to the column with the highest similarity.
+    """
+    matches = []
+    for i in range(similarity_matrix.shape[0]):
+        j = int(np.argmax(similarity_matrix[i]))
+        matches.append((i, j))
+    return matches
+
     
 
 def compute_similarity_measures(set_a: LPMSet, set_b: LPMSet):
@@ -81,14 +100,25 @@ def compute_similarity_measures(set_a: LPMSet, set_b: LPMSet):
     #print(compute_trace_similarity_leven(set_a, set_b))
     #print(compute_eventually_follows_similarity(set_a, set_b))
     #print(compute_trace_similarity_perfect(set_a, set_b))
-    a_subset_b, b_subset_a = check_subset(np.array(compute_pairwise_similarity_measures(set_a, set_b, compute_trace_similarity_leven)))
+    simlarity_matrix_leven = np.array(compute_pairwise_similarity_measures(set_a, set_b, compute_trace_similarity_leven))
+    print(f"\n\nSim-matrix leven: {simlarity_matrix_leven}\n\n")
+    #similarity_matrix_other = ...
+
+    a_subset_b, b_subset_a = check_subset(simlarity_matrix_leven)
+
+    #Create matchings
+    matchings = {}
+    matchings["leven_sym"] = create_symmetric_optimal_matching(simlarity_matrix_leven)
+    matchings["leven_asym_1"] = create_asymmetric_optimal_matching(simlarity_matrix_leven)
+    #matchings["leven_asym_2"] = create_asymmetric_optimal_matching(simlarity_matrix_leven.T)
     
     results = {
         "trace_similarity": compute_trace_similarity_leven(set_a, set_b),
         "eventually_follows_similarity": compute_eventually_follows_similarity(set_a, set_b),
         "trace_similarity_perfect": compute_trace_similarity_perfect(set_a, set_b),
         "a_subset_b": f"{a_subset_b}",
-        "b_subset_a": f"{b_subset_a}"
+        "b_subset_a": f"{b_subset_a}",
+        "matchings": matchings
     }
 
     return results

@@ -72,7 +72,8 @@ const FileUpload = () => {
       });
 
       // Handle success response
-      setResponseData(response.data);  // Save response data in state
+      setResponseData(response.data);
+      console.log(response.data);  // Save response data in state
       setUploadProgress(null);  // Reset progress bar
       setErrorMessage(null);  // Clear error messages
     } catch (error) {

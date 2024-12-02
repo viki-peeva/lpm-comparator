@@ -3,6 +3,7 @@ from pm4py.objects.petri_net.obj import PetriNet, Marking
 from pm4py.algo.simulation.playout.petri_net.variants.extensive import apply as find_traces
 from pm4py.statistics.eventually_follows.log.get import apply as get_eventually_follows_dict
 import pickle
+import random
 
 # Define a custom class to hold the Petri net and its markings
 class LPM:
@@ -16,6 +17,7 @@ class LPM:
         self.fitness = None
         self.precision = None
         self.coverage = None
+        self.belongs_to_set = None
         #self.get_eventually_follows_set()
 
     def __repr__(self):
@@ -49,12 +51,12 @@ class LPM:
     
     def get_fitness(self):
         if self.fitness is None:
-            self.fitness = None #Adjust this line to compute the fitness of the LPM
+            self.fitness = random.uniform(0,1) #Adjust this line to compute the fitness of the LPM
         return self.fitness
     
     def get_precision(self):
         if self.precision is None:
-            self.precision = None #Adjust this line to compute the precision of the LPM
+            self.precision = random.uniform(0,1) #Adjust this line to compute the precision of the LPM
         return self.precision
     
     def get_coverage(self):
@@ -95,5 +97,13 @@ class LPMSet:
             self.combined_eventually_follows_set = combined_eventually_follows_set
 
         return self.combined_eventually_follows_set
+    
+    def mark_belongs_to_set(self, set_id):
+        for lpm in self.lpms:
+            lpm.belongs_to_set = set_id
+
+    def unmark_belongs_to_set(self):
+        for lpm in self.lpms:
+            lpm.belongs_to_set = None
     
     
