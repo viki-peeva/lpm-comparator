@@ -1,12 +1,18 @@
-import FileUpload from '@/components/Fileupload'
 import './App.css'
-import Component from './components/advanced-process-model-analyzer'
+import Main from './pages/Main'
+import Footer from './pages/Footer'
+import Header from './pages/Header'
 
 function App() {
   
 
   return (
-    <Component />
+    <div className='bg-gray-100'>
+      {/*<Header />*/}
+      <Main />  
+      {/*<Footer />*/}
+    </div>
+     
   )
 }
 
