@@ -7,17 +7,9 @@ from lpm_set_comparison_python import utils
 import concurrent.futures
 from functools import partial
 import time
+import json
 
-def compute_conformance_measures(set_a: LPMSet, set_b: LPMSet, event_log: EventLog):
-    traces = utils.get_traces_from_event_log(event_log)
-
-    coverage_a, duplicate_coverage_a, coverage_b, duplicate_coverage_b = 0, 0, 0, 0
-    
-    fitness_precision_values_a = []
-    fitness_precision_values_b = []
-
-    partial_fitness_precision_on_traces = partial(compute_fitness_precision_on_subtraces, traces=traces)
-    partial_model_coverage = partial(compute_model_coverage, traces=traces)
+"""
     with concurrent.futures.ProcessPoolExecutor(max_workers=10) as executor:
             start_time = time.time()
             log_coverage_masks_a = list(executor.map(partial_model_coverage, set_a.lpms))
@@ -44,14 +36,39 @@ def compute_conformance_measures(set_a: LPMSet, set_b: LPMSet, event_log: EventL
             fitness_precision_values_b = list(executor.map(partial_fitness_precision_on_traces, set_b.lpms))
             end_time = time.time()
             print(f"Computing time in seconds: {(end_time - start_time)}")
-    
-    
+"""
+
+def compute_coverage(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]]):
+    coverage_a, duplicate_coverage_a, coverage_b, duplicate_coverage_b = 0, 0, 0, 0
+    partial_model_coverage = partial(compute_model_coverage, traces=traces)
+
+    log_coverage_masks_a = []
+    for lpm in set_a.lpms:
+        log_coverage_masks_a.append(compute_model_coverage(lpm, traces))
+
+    coverage_a, duplicate_coverage_a = compute_coverage_from_masks(log_coverage_masks_a)
+
+    log_coverage_masks_b = list(map(partial_model_coverage, set_b.lpms))
+    coverage_b, duplicate_coverage_b = compute_coverage_from_masks(log_coverage_masks_b)
     results = {
         "coverage_a": coverage_a,
         "duplicate_coverage_a": duplicate_coverage_a,
-        "fitness_precision_values_a": fitness_precision_values_a,
         "coverage_b": coverage_b,
-        "duplicate_coverage_b": duplicate_coverage_b,
+        "duplicate_coverage_b": duplicate_coverage_b
+    }
+    return results
+
+def compute_conformance_measures(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]]):
+    fitness_precision_values_a = []
+    fitness_precision_values_b = []
+    
+    partial_fitness_precision_on_traces = partial(compute_fitness_precision_on_subtraces, traces=traces)
+
+    fitness_precision_values_a = list(map(partial_fitness_precision_on_traces, set_a.lpms))
+    fitness_precision_values_b = list(map(partial_fitness_precision_on_traces, set_b.lpms))
+    
+    results = {
+        "fitness_precision_values_a": fitness_precision_values_a,
         "fitness_precision_values_b": fitness_precision_values_b
     }
     return results

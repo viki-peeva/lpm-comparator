@@ -491,7 +491,7 @@ export default function Component() {
   }, [selectedFile])
 
   return (
-    <div className="container mx-auto p-4 min-h-screen bg-gray-100">
+    <div className="container mx-auto p-4 min-h-screen min-w-full bg-gray-100">
       {stage === "initial" && renderInitialStage()}
       {stage === "uploading" && renderUploadingStage()}
       {stage === "analysis" && renderAnalysisStage()}

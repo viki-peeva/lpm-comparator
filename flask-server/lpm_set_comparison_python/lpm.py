@@ -60,6 +60,8 @@ class LPM:
         return self.precision
     
     def get_coverage(self):
+        if self.coverage is None:
+            self.coverage = 3 #Adjust this line to compute the coverage of the LPM
         return self.coverage
 
 

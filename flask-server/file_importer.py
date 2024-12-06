@@ -2,6 +2,7 @@ import os
 from werkzeug.utils import secure_filename
 import pm4py
 from lpm_set_comparison_python.lpm import LPM, LPMSet
+from lpm_set_comparison_python import utils
 
 UPLOAD_FOLDER = './uploads'
 
@@ -63,7 +64,8 @@ def convert_xes_file(xes_file):
         try:
             event_log = pm4py.read_xes(filepath)
             os.remove(filepath)
-            return event_log
+            traces = utils.get_traces_from_event_log(event_log)
+            return traces
         except Exception as e:
             raise Exception(f"Error processing XES file: {str(e)}")
     else:

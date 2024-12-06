@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import FileInfo from "@/types/FileInfo";
+import {FileInfo} from "@/types/FileInfo";
 import { Upload, FileText, X } from "lucide-react";
 import { ChangeEvent } from "react";
 

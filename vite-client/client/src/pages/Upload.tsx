@@ -2,9 +2,13 @@ import EventLogUpload from "@/components/EventLogUpload";
 import PetriNetUpload from "@/components/PetriNetUpload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import FileInfo from "@/types/FileInfo";
+import {FileInfo, ReportData } from "@/types/FileInfo";
+import axios from "axios";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
+import { useToast } from "@/hooks/use-toast"
+import { ToastAction } from "@/components/ui/toast";
+
 
 
 export default function UploadPage({
@@ -14,7 +18,8 @@ export default function UploadPage({
     lpmsLeft,
     setLpmsLeft,
     lpmsRight,
-    setLpmsRight
+    setLpmsRight,
+    setReport
   }: {
     setCurrentPage: (page: "start" | "upload" | "analysis") => void;
     eventLog: FileInfo | null;
@@ -23,16 +28,83 @@ export default function UploadPage({
     setLpmsLeft: (lpmsLeft: FileInfo[]) => void;
     lpmsRight: FileInfo[];
     setLpmsRight: (lpmsRight: FileInfo[]) => void;
+    setReport: (reportData: ReportData) => void;
   }){
 
-    const [isLoading, setIsLoading] = useState(true); // Show loading animation
-    const [statusText, setStatusText] = useState('Uploading files...'); // Status message
+    const [isLoading, setIsLoading] = useState(false);
+    const [statusText, setStatusText] = useState('Uploading files...');
 
+    const {toast} = useToast();
+
+    const handleFileUpload = async () => {
+    
+        const formData = new FormData();
+      
+        lpmsLeft.forEach((lpm) => {
+          formData.append('pnml_side_a', lpm.file);
+        });
+      
+        lpmsRight.forEach((lpm) => {
+          formData.append('pnml_side_b', lpm.file);
+        });
+      
+        if (eventLog) {
+          formData.append('xes_file', eventLog.file);
+        }
+      
+        try {
+          setIsLoading(true);
+          setStatusText('Uploading files...');
+      
+          await axios.post<ReportData>('/api/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          console.log("Files uploaded successfully");
+          setStatusText('Processing files...');
+          listenForProgress();
+        } catch (error: any) {
+          setIsLoading(false);
+          console.error(error);
+          toast({
+            variant: "destructive",
+            title: "Uh oh! Something went wrong.",
+            description: "There was a problem with your request.",
+          })
+        }
+      };
+
+      const listenForProgress = () => {
+        const eventSource = new EventSource('/api/report/compute');
+      
+        eventSource.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          console.log(data);
+          setStatusText(data.message);
+      
+          if (data.report) {
+            eventSource.close();
+            setReport(data.report);
+            setIsLoading(false);
+            setCurrentPage('analysis');
+          }
+        };
+
+        eventSource.onerror = (event) => {
+          console.error(event);
+          eventSource.close();
+          setIsLoading(false);
+          toast({
+            variant: "destructive",
+            title: "Uh oh! Something went wrong.",
+            description: "There was a problem with your request.",
+          })
+        };
+      };
 
     return (
         <>
         {isLoading ? ( 
-             <div className="flex flex-col items-center justify-center min-h-screen">
+             <div className="flex flex-col items-center justify-center h-[calc(100vh-2rem)] space-y-4">
              {/* Loading animation */}
              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
      
@@ -60,7 +132,7 @@ export default function UploadPage({
                   setCurrentPage("start")} size="lg" variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
               </Button>
-              <Button onClick={() => setCurrentPage("analysis")} size="lg" disabled={!eventLog || lpmsLeft.length === 0 || lpmsRight.length === 0}
+              <Button onClick={handleFileUpload} size="lg" disabled={!eventLog || lpmsLeft.length === 0 || lpmsRight.length === 0}
               >
                 Finish Upload and Analyze
               </Button>
