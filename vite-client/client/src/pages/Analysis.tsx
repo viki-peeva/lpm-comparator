@@ -1,16 +1,24 @@
 import { CustomAlertDialog } from "@/components/AlertDialog";
 import { Button } from "@/components/ui/button";
 import { ExportFile } from "@/types/Export";
+import { FileInfo } from "@/types/FileInfo";
 import { ReportData } from "@/types/Report";
 import axios from "axios";
 import { Download } from "lucide-react";
 
 export default function AnalysisPage({
     report,
+    setReport,
+    setEventLog,
+    setLpmsLeft,
+    setLpmsRight,
     setCurrentPage,
   }: {
     report: ReportData | null;
     setReport: (reportData: ReportData) => void;
+    setEventLog: (eventLog: FileInfo | null) => void;
+    setLpmsLeft: (lpmsLeft: FileInfo[]) => void;
+    setLpmsRight: (lpmsRight: FileInfo[]) => void;
     setCurrentPage: (page: "start" | "upload" | "analysis") => void;
   }){
 
@@ -39,6 +47,13 @@ export default function AnalysisPage({
           await axios.delete('/api/report');
         } catch (error) {
           console.error("Failed to reset session", error);
+        }
+
+        if (nextPage === "start") {
+          setEventLog(null);
+          setLpmsLeft([]);
+          setLpmsRight([]);
+          setReport({});
         }
         setCurrentPage(nextPage);
     }
