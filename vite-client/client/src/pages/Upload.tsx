@@ -5,10 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import {FileInfo, ReportData } from "@/types/FileInfo";
 import axios from "axios";
 import { ArrowLeft } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast"
-import { ToastAction } from "@/components/ui/toast";
-
+import { CustomAlertDialog } from "@/components/AlertDialog";
 
 
 export default function UploadPage({
@@ -128,14 +127,27 @@ export default function UploadPage({
               </Card>
             </div>
             <div className="flex justify-between mt-6">
-              <Button onClick={() => 
-                  setCurrentPage("start")} size="lg" variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
-              </Button>
-              <Button onClick={handleFileUpload} size="lg" disabled={!eventLog || lpmsLeft.length === 0 || lpmsRight.length === 0}
-              >
-                Finish Upload and Analyze
-              </Button>
+              <CustomAlertDialog button = {
+                <Button size="lg" variant="outline">
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
+                </Button>} 
+                title={"Are you sure?"}
+                description="If you continue, all uploaded files will be lost."
+                onAction={() => {
+                  setEventLog(null);
+                  setLpmsLeft([]);
+                  setLpmsRight([]);
+                  setCurrentPage("start");
+                }}
+              />
+              <CustomAlertDialog 
+                button={<Button size="lg" disabled={!eventLog || lpmsLeft.length === 0 || lpmsRight.length === 0} >
+                    Finish Upload and Analyze
+                    </Button>} 
+                title={"Do you want to continue?"} 
+                description={"The computation takes a while and files cannot be changed without another computation."} 
+                onAction={handleFileUpload} 
+              />
             </div>
             </>
         )}
