@@ -7,10 +7,11 @@ import random
 
 # Define a custom class to hold the Petri net and its markings
 class LPM:
-    def __init__(self, net: PetriNet, im: Marking, fm: Marking):
+    def __init__(self, net: PetriNet, im: Marking, fm: Marking, name: str):
         self.net = net
         self.im = im
         self.fm = fm
+        self.name = name
         self.traces = None
         self.log = None
         self.eventually_follows_set = None

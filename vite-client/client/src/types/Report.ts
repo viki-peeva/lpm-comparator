@@ -1,9 +1,20 @@
 type pair = [number, number]
 
+type similarityMatrix = number[][]
+
 interface SimilarityMeasures {
-    trace_similarity?: number;
-    eventually_follows_similarity?: number;
-    trace_similarity_perfect?: number;
+    trace_similarity?: {
+        overall: number;
+        matrix: similarityMatrix;
+    };
+    eventually_follows_similarity?: {
+        overall: number;
+        matrix: similarityMatrix;
+    };
+    trace_similarity_perfect?: {
+        overall: number;
+        matrix: similarityMatrix;
+    };
     a_subset_b?: boolean;
     b_subset_a?: boolean;
     matchings?: {
@@ -11,20 +22,6 @@ interface SimilarityMeasures {
         leven_asym_1? : pair[];
         leven_asym_2? : pair[];
     };
-}
-
-interface Coverage {
-    coverage_a?: number;
-    duplicate_coverage_a?: number;
-    model_coverage_a?: number[];
-    coverage_b?: number;
-    duplicate_coverage_b?: number;
-    model_coverage_b?: number[];
-}
-
-interface Conformance {
-    fitness_precision_values_a?: pair[];
-    fitness_precision_values_b?: pair[];
 }
 
 interface Aggregation {
@@ -42,11 +39,29 @@ interface Aggregation {
     };
 }
 
+interface LocalProcessModel {
+    name: string;
+    fitness?: number;
+    precision?: number;
+    coverage?: number;
+}
+
 export interface ReportData {
     message?: string;
     similarity?: SimilarityMeasures;
-    coverage?: Coverage;
-    conformance?: Conformance;
+    coverage?: {
+        coverage_a: number;
+        duplicate_coverage_a: number;
+        coverage_b: number;
+        duplicate_coverage_b: number;
+        coverage_mask_a?: number[][];
+        coverage_mask_b?: number[][];
+        trace_coverages_a?: number[];
+        trace_coverages_b?: number[];
+    };
     fitness_aggregation?: Aggregation;
     precision_aggregation?: Aggregation;
+    lpms_a: LocalProcessModel[];
+    lpms_b: LocalProcessModel[];
+    event_log?: string[][];
 }

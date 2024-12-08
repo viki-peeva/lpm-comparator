@@ -1,16 +1,15 @@
 from .conformance_computation import compute_conformance_measures, compute_coverage
 from .similarity_computation import compute_similarity_measures
 from .aggregation import get_aggregated_measures
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from .lpm import LPMSet
-from pm4py.objects.log.obj import EventLog
 import json
 from file_storage import save_computations
 
 def calculate_report(
     set_a: LPMSet,
     set_b: LPMSet,
-    event_log: Optional[EventLog],
+    event_log: Optional[List[Tuple[str]]],
     session_id: str
 ):
     # Create a dictionary to store the results of the comparison
@@ -28,7 +27,7 @@ def calculate_report(
         print("Computed coverage")
 
         yield f"data: {json.dumps({'state': 'IN_PROGRESS', 'message': 'Computing conformance...'})}\n\n"
-        report["conformance"] = compute_conformance_measures(set_a, set_b, event_log)
+        compute_conformance_measures(set_a, set_b, event_log)
         print("Computed conformance measures")
 
         yield f"data: {json.dumps({'state': 'IN_PROGRESS', 'message': 'Computing aggregations...'})}\n\n"
@@ -36,6 +35,27 @@ def calculate_report(
         report["fitness_aggregation"] = get_aggregated_measures(set_a, set_b, matchings, measure="fitness")
         report["precision_aggregation"] = get_aggregated_measures(set_a, set_b, matchings, measure="precision")
         print("Computed aggregations")
+
+        lpms_a = []
+        lpms_b = []
+        for lpm in set_a.lpms:
+            lpms_a.append({
+                "name": lpm.name,
+                "fitness": lpm.get_fitness(),
+                "precision": lpm.get_precision(),
+                "coverage": lpm.get_coverage()
+            })
+        for lpm in set_b.lpms:
+            lpms_b.append({
+                "name": lpm.name,
+                "fitness": lpm.get_fitness(),
+                "precision": lpm.get_precision(),
+                "coverage": lpm.get_coverage()
+            })
+        report["lpms_a"] = lpms_a
+        report["lpms_b"] = lpms_b
+        #Event log only when needed (Too big)
+        #report["event_log"] = event_log
 
     save_computations(session_id, set_a, set_b, event_log, report)
     yield f"data: {json.dumps({'state': 'COMPLETED', 'progress': 100, 'message': 'Task completed', 'report': report})}\n\n"

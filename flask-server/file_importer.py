@@ -34,7 +34,7 @@ def convert_pnml_files(pnml_files):
             pnml_file.save(filepath)
             try:
                 net, im, fm = pm4py.read_pnml(filepath)
-                lpm = LPM(net, im, fm)
+                lpm = LPM(net, im, fm, filename)
                 lpms.append(lpm)
                 os.remove(filepath)
             except Exception as e:

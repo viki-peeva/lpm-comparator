@@ -100,22 +100,34 @@ def compute_similarity_measures(set_a: LPMSet, set_b: LPMSet):
     #print(compute_trace_similarity_leven(set_a, set_b))
     #print(compute_eventually_follows_similarity(set_a, set_b))
     #print(compute_trace_similarity_perfect(set_a, set_b))
-    simlarity_matrix_leven = np.array(compute_pairwise_similarity_measures(set_a, set_b, compute_trace_similarity_leven))
-    print(f"\n\nSim-matrix leven: {simlarity_matrix_leven}\n\n")
-    #similarity_matrix_other = ...
+    simlarity_matrix_leven = compute_pairwise_similarity_measures(set_a, set_b, compute_trace_similarity_leven)
+    simlarity_matrix_leven_np = np.array(simlarity_matrix_leven)
+    
+    similarity_matrix_eventually_follows = compute_pairwise_similarity_measures(set_a, set_b, compute_eventually_follows_similarity)
+    similarity_matrix_perfect = compute_pairwise_similarity_measures(set_a, set_b, compute_trace_similarity_perfect)
+
 
     a_subset_b, b_subset_a = check_subset(simlarity_matrix_leven)
 
     #Create matchings
     matchings = {}
-    matchings["leven_sym"] = create_symmetric_optimal_matching(simlarity_matrix_leven)
-    matchings["leven_asym_1"] = create_asymmetric_optimal_matching(simlarity_matrix_leven)
+    matchings["leven_sym"] = create_symmetric_optimal_matching(simlarity_matrix_leven_np)
+    matchings["leven_asym_1"] = create_asymmetric_optimal_matching(simlarity_matrix_leven_np)
     #matchings["leven_asym_2"] = create_asymmetric_optimal_matching(simlarity_matrix_leven.T)
     
     results = {
-        "trace_similarity": compute_trace_similarity_leven(set_a, set_b),
-        "eventually_follows_similarity": compute_eventually_follows_similarity(set_a, set_b),
-        "trace_similarity_perfect": compute_trace_similarity_perfect(set_a, set_b),
+        "trace_similarity": {
+            "overall": compute_trace_similarity_leven(set_a, set_b),
+            "matrix": simlarity_matrix_leven
+        },
+        "eventually_follows_similarity": {
+            "overall": compute_eventually_follows_similarity(set_a, set_b),
+            "matrix": similarity_matrix_eventually_follows
+        },
+        "trace_similarity_perfect": {
+            "overall": compute_trace_similarity_perfect(set_a, set_b),
+            "matrix": similarity_matrix_perfect
+        },
         "a_subset_b": f"{a_subset_b}",
         "b_subset_a": f"{b_subset_a}",
         "matchings": matchings
