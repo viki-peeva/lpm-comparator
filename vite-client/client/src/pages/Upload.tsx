@@ -103,7 +103,7 @@ export default function UploadPage({
         {isLoading ? ( 
              <div className="flex flex-col items-center justify-center h-[calc(100vh-2rem)] space-y-4">
              {/* Loading animation */}
-             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-chart-1"></div>
      
              {/* Status text */}
              <p className="mt-4 text-lg text-gray-600">{statusText}</p>

@@ -24,8 +24,16 @@ interface SimilarityMeasures {
     };
 }
 
-interface Aggregation {
+export interface Aggregation {
     weighted_harmonic_mean?: pair;
+    arithmetic_avg?: pair;
+    geometric_mean?: pair;
+    harmonic_mean?: pair;
+    weighted_arithmetic_avg?: pair;
+    weighted_geometric_mean?: pair;
+}
+
+interface Evaluation {
     dominance_counting?: {
         leven_sym?: pair;
         leven_asym_1?: pair;
@@ -61,6 +69,8 @@ export interface ReportData {
     };
     fitness_aggregation?: Aggregation;
     precision_aggregation?: Aggregation;
+    fitness_evaluation?: Evaluation;
+    precision_evaluation?: Evaluation;
     lpms_a: LocalProcessModel[];
     lpms_b: LocalProcessModel[];
     event_log?: string[][];
