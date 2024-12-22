@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/chart"
 import { Aggregation } from "@/types/Report"
 import { RadialBar, RadialBarChart } from "recharts"
+import { AnalysisPage } from "@/pages/Analysis";
 
-export const ConformanceCard = ({report}:{report:ReportData;}) => {
+const ConformanceCard = ({ report, setAnalysisPage }: { report: ReportData;  setAnalysisPage: (page: AnalysisPage) => void; }) => {
 
     type AggregationMethod = keyof Aggregation;
 
@@ -37,7 +38,14 @@ export const ConformanceCard = ({report}:{report:ReportData;}) => {
     return (
     <Card className="md:row-span-2 flex flex-col overflow-auto">
         <CardHeader>
-            <CardTitle className="text-lg font-semibold">Aggregated Conformance</CardTitle>
+        <CardTitle>
+          <button
+            onClick={() => setAnalysisPage("conformance")}
+            className="text-lg font-semibold cursor-pointer hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Aggregated Conformance
+          </button>
+        </CardTitle>
             <Select onValueChange={(v) => setAggregationMethod(v as AggregationMethod)} defaultValue={aggregationMethod}>
                 <SelectTrigger>
                 <SelectValue placeholder="Select aggregation method" />
@@ -83,7 +91,7 @@ export const ConformanceCard = ({report}:{report:ReportData;}) => {
   );
 }
 
-export const CoverageCard = ({report}:{report:ReportData;}) => {
+const CoverageCard = ({ report, setAnalysisPage }: { report: ReportData;  setAnalysisPage: (page: AnalysisPage) => void; }) => {
 
     const chartData = [
         { lpmSet: "", coverage: 1, fill: "white" },
@@ -108,7 +116,14 @@ export const CoverageCard = ({report}:{report:ReportData;}) => {
     return (
         <Card className="h-64 flex flex-col">
             <CardHeader>
-                <CardTitle className="text-lg font-semibold">Overall Coverage</CardTitle>
+            <CardTitle>
+          <button
+            onClick={() => setAnalysisPage("coverage")}
+            className="text-lg font-semibold cursor-pointer hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Overall Coverage
+          </button>
+        </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 pt-0 h-full">
                 <ChartContainer
@@ -136,24 +151,9 @@ export const CoverageCard = ({report}:{report:ReportData;}) => {
             </CardContent>
         </Card>
     );
-}
-
-const Circle = ({ fraction, set }: {fraction: number; set: number}) => {
-    const degrees = fraction * 360;
-
-    const color = set === 1 ? "hsl(var(--chart-2))" : "hsl(var(--chart-3))";
+};
   
-    return (
-      <div
-        className="w-2 h-2 rounded-full bg-gray-200 relative"
-        style={{
-          background: `conic-gradient(${color} 0deg, ${color} ${degrees}deg, transparent ${degrees}deg, transparent 360deg)`,
-        }}
-      ></div>
-    );
-  };
-  
-  export const CardinalityCard = ({report}:{report:ReportData;}) => {
+const CardinalityCard = ({ report, setAnalysisPage }: { report: ReportData;  setAnalysisPage: (page: AnalysisPage) => void; }) => {
     const setA = report.lpms_a.length;
     const setB = report.lpms_b.length;
   
@@ -169,7 +169,6 @@ const Circle = ({ fraction, set }: {fraction: number; set: number}) => {
     const fullCirclesB = Math.floor(circlesB);
     const lastCircleFractionB = circlesB - fullCirclesB;
   
-    // Prepare data for Set A
     const circlesDataA = [];
     for (let i = 0; i < fullCirclesA; i++) {
       circlesDataA.push({ fraction: 1 });
@@ -178,7 +177,6 @@ const Circle = ({ fraction, set }: {fraction: number; set: number}) => {
       circlesDataA.push({ fraction: lastCircleFractionA });
     }
   
-    // Prepare data for Set B
     const circlesDataB = [];
     for (let i = 0; i < fullCirclesB; i++) {
       circlesDataB.push({ fraction: 1 });
@@ -187,10 +185,32 @@ const Circle = ({ fraction, set }: {fraction: number; set: number}) => {
       circlesDataB.push({ fraction: lastCircleFractionB });
     }
   
+    const Circle = ({ fraction, set }: {fraction: number; set: number}) => {
+      const degrees = fraction * 360;
+  
+      const color = set === 1 ? "hsl(var(--chart-2))" : "hsl(var(--chart-3))";
+    
+      return (
+        <div
+          className="w-2 h-2 rounded-full bg-gray-200 relative"
+          style={{
+            background: `conic-gradient(${color} 0deg, ${color} ${degrees}deg, transparent ${degrees}deg, transparent 360deg)`,
+          }}
+        />
+      );
+    };
+
     return (
         <Card className="h-64 flex flex-col">
         <CardHeader>
-            <CardTitle className="text-lg font-semibold">Cardinality</CardTitle>
+        <CardTitle>
+          <button
+            onClick={() => setAnalysisPage("list")}
+            className="text-lg font-semibold cursor-pointer hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+           Cardinality
+          </button>
+        </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 flex h-4/6 pt-0">
           <div className="flex-1 flex flex-col items-center h-5/6">
@@ -214,9 +234,9 @@ const Circle = ({ fraction, set }: {fraction: number; set: number}) => {
         </CardContent>
       </Card>
     );
-  };
+};
 
-export const SimilarityCard = ({report}:{report:ReportData;}) => {
+const SimilarityCard = ({ report, setAnalysisPage }: { report: ReportData;  setAnalysisPage: (page: AnalysisPage) => void; }) => {
     
     type SimilarityMeasure = keyof SimilarityMeasures;
 
@@ -234,7 +254,14 @@ export const SimilarityCard = ({report}:{report:ReportData;}) => {
     return (
         <Card className="h-64 overflow-auto">
             <CardHeader>
-            <CardTitle className="text-lg font-semibold">Similarity</CardTitle>
+            <CardTitle>
+          <button
+            onClick={() => setAnalysisPage("similarity")}
+            className="text-lg font-semibold cursor-pointer hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Similarity
+          </button>
+        </CardTitle>
             <Select onValueChange={(v) => setSimilarityMeasure(v as SimilarityMeasure)} defaultValue={similarityMeasure}>
                 <SelectTrigger>
                 <SelectValue placeholder="Select similarity measure" />
@@ -256,7 +283,7 @@ export const SimilarityCard = ({report}:{report:ReportData;}) => {
 
 }
 
-export const EvaluationCard = ({ report }: { report: ReportData }) => {
+const EvaluationCard = ({ report, setAnalysisPage }: { report: ReportData;  setAnalysisPage: (page: AnalysisPage) => void; }) => {
     const setAWins = 6;
     const setBWins = 7;
   
@@ -302,7 +329,14 @@ export const EvaluationCard = ({ report }: { report: ReportData }) => {
     return (
       <Card className="h-64 flex flex-col">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Evaluation</CardTitle>
+        <CardTitle>
+          <button
+            onClick={() => setAnalysisPage("evaluation")}
+            className="text-lg font-semibold cursor-pointer hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Evaluation
+          </button>
+        </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col justify-start">
           <div className="flex items-center justify-between px-4">
@@ -367,3 +401,16 @@ export const EvaluationCard = ({ report }: { report: ReportData }) => {
     );
   };
   
+
+export default function AnalysisOverview ({ report, setAnalysisPage }: { report: ReportData;  setAnalysisPage: (page: AnalysisPage) => void; }) {
+
+  return(
+    <div className="flex-grow grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-min">
+          <ConformanceCard report={report} setAnalysisPage={setAnalysisPage} />
+          <CoverageCard report={report} setAnalysisPage={setAnalysisPage}/>
+          <CardinalityCard report={report} setAnalysisPage={setAnalysisPage}/>
+          <SimilarityCard report={report} setAnalysisPage={setAnalysisPage}/>
+          <EvaluationCard report={report} setAnalysisPage={setAnalysisPage}/>
+      </div>
+      );
+};

@@ -7,7 +7,12 @@ import { ReportData } from "@/types/Report";
 import axios from "axios";
 import { Download } from "lucide-react";
 import { useState } from "react";
-import { ConformanceCard, CoverageCard, CardinalityCard, SimilarityCard, EvaluationCard } from "@/components/DashboardCards"; 
+import AnalysisOverview from "@/pages/analysis/DashboardCards"; 
+import LpmList from "@/pages/analysis/LpmList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+
+export type AnalysisPage = "overview" | "list"| "conformance" | "similarity" | "coverage" | "evaluation" | "setRelation";
 
 export default function AnalysisPage({
     report,
@@ -24,8 +29,13 @@ export default function AnalysisPage({
     setLpmsRight: (lpmsRight: FileInfo[]) => void;
     setCurrentPage: (page: "start" | "upload" | "analysis") => void;
   }){
+    const [currentAnalysisPage, setCurrentAnalysisPage] = useState<AnalysisPage>("overview");
 
     const [isExporting, setIsExporting] = useState(false)
+
+    const goBack = () => {
+      setCurrentAnalysisPage("overview");
+    }
 
     const exportResults = async () => {
       setIsExporting(true)
@@ -69,24 +79,13 @@ export default function AnalysisPage({
 
     return (
       <>
-      <h1 className="text-3xl font-bold mb-6 text-center">Analysis Results</h1>
-      <div className="space-y-6">
         {report ? (
-          <div className="flex-grow grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-min">
-          <ConformanceCard report={report} />
-          <CoverageCard report={report} />
-          <CardinalityCard report={report} />
-          <SimilarityCard report={report} />
-          <EvaluationCard report={report} />
-        </div>
-        ) : (
-          <Card>
-            <CardContent className="p-6">
-              <p>No report available</p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+          currentAnalysisPage === "overview" ? (
+          <>
+            <h1 className="text-3xl font-bold mb-6 text-center">Analysis Results</h1>
+            <div className="space-y-6">
+            <AnalysisOverview report={report} setAnalysisPage={setCurrentAnalysisPage}/> 
+            </div>
           <div className="flex justify-center space-x-4 mt-6">
             <CustomAlertDialog button={
               <Button size="lg">Start new analysis</Button>}
@@ -104,6 +103,55 @@ export default function AnalysisPage({
               onAction={() => resetSession("upload")}
             />
           </div>
+          </>
+          ) : (
+            <div className="flex flex-col">
+          <Tabs className="w-full" defaultValue={currentAnalysisPage}>
+          <div className="flex justify-center">
+            <TabsList className="bg-gray-200 w-max">
+              <TabsTrigger value="list" onClick={() => setCurrentAnalysisPage("list")}>LPM List</TabsTrigger>
+              <TabsTrigger value="conformance">Conformance</TabsTrigger>
+              <TabsTrigger value="similarity">Similarity</TabsTrigger>
+              <TabsTrigger value="coverage">Coverage</TabsTrigger>
+              <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
+              <TabsTrigger value="setRelation">Set Relationship</TabsTrigger>
+            </TabsList>
+            </div>
+            <TabsContent value="list"><LpmList report={report} goBack={goBack}></LpmList></TabsContent>
+            <TabsContent value="conformance">Change your password here.</TabsContent>
+          </Tabs>
+          </div>
+          
+        )
+
+          
+
+        ) : (
+          <Card>
+            <CardContent className="p-6">
+              <p>No report available</p>
+            </CardContent>
+          </Card>
+        )}
+        {/*
+          currentAnalysisPage === "list" ? (
+          <LpmList report={report} setAnalysisPage={setCurrentAnalysisPage}/> ) :
+          currentAnalysisPage === "conformance" ? (
+          <AnalysisConformance report={report} setAnalysisPage={setCurrentAnalysisPage}/> ) :
+          currentAnalysisPage === "similarity" ? (
+          <AnalysisSimilarity report={report} setAnalysisPage={setCurrentAnalysisPage}/> ) :
+          currentAnalysisPage === "coverage" ? (
+          <AnalysisCoverage report={report} setAnalysisPage={setCurrentAnalysisPage}/> ) :
+          currentAnalysisPage === "evaluation" ? (
+          <AnalysisEvaluation report={report} setAnalysisPage={setCurrentAnalysisPage}/> ) :
+          currentAnalysisPage === "setRelation" ? (
+          <AnalysisSetRelation report={report} setAnalysisPage={setCurrentAnalysisPage}/> ) : (
+          <Card>
+            <CardContent className="p-6">
+              <p>No report available</p>
+            </CardContent>
+          </Card>)*/}
+      
         </>
         
     );
