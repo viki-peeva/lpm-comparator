@@ -1,4 +1,4 @@
-import { ReportData } from "@/types/Report";
+import { ReportData, SimilarityMeasures } from "@/types/Report";
 import { Card, CardTitle, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
@@ -77,6 +77,7 @@ export const ConformanceCard = ({report}:{report:ReportData;}) => {
             />
             <Bar dataKey="setA" fill="var(--color-setA)" radius={4} />
             <Bar dataKey="setB" fill="var(--color-setB)" radius={4} />
+            
           </BarChart>
         </ChartContainer>
         </CardContent>
@@ -87,7 +88,8 @@ export const ConformanceCard = ({report}:{report:ReportData;}) => {
 export const CoverageCard = ({report}:{report:ReportData;}) => {
 
     const chartData = [
-        { lpmSet: "setA", coverage: 1, fill: "hsl(var(--chart-2))" },
+        { lpmSet: "", coverage: 1, fill: "white" },
+        { lpmSet: "setA", coverage: report.coverage?.coverage_a, fill: "hsl(var(--chart-2))" },
         { lpmSet: "setB", coverage: report.coverage?.coverage_b, fill: "hsl(var(--chart-3))" },
     ];
     
@@ -106,24 +108,23 @@ export const CoverageCard = ({report}:{report:ReportData;}) => {
     } satisfies ChartConfig;
 
     return (
-        <Card className="h-64 flex flex-col overflow-auto">
+        <Card className="h-64 flex flex-col">
             <CardHeader>
                 <CardTitle className="text-lg font-semibold">Overall Coverage</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 pt-0">
+            <CardContent className="flex-1 pt-0 h-full">
                 <ChartContainer
                 config={chartConfig}
-                className="w-[50%] mt-0 aspect-square mx-auto"
+                className="h-[70%] mt-0 aspect-square mx-auto"
                 >
-                <RadialBarChart data={chartData} startAngle={-90}
-            endAngle={380}
-            innerRadius={30}
-            outerRadius={110}>
+                <RadialBarChart data={chartData}
+            innerRadius="10%"
+              outerRadius="100%">
                     <ChartTooltip
                     cursor={false}
                     content={<ChartTooltipContent hideLabel nameKey="lpmSet" />}
                     />
-                    <RadialBar dataKey="coverage" background>
+                    <RadialBar dataKey="coverage" background className="h-5/6">
                     <LabelList
                         position="insideStart"
                         dataKey="lpmSet"
@@ -150,11 +151,43 @@ export const CardinalityCard = ({report}:{report:ReportData;}) => {
 }
 
 export const SimilarityCard = ({report}:{report:ReportData;}) => {
+    
+    type SimilarityMeasure = keyof SimilarityMeasures;
+
+    const [similarityMeasure, setSimilarityMeasure] = useState<SimilarityMeasure>("trace_similarity" as SimilarityMeasure);
+
+    // Extract the similarity data for the selected measure
+  const similarityData = report.similarity?.[similarityMeasure];
+  
+  // Get the overall similarity value, ensuring it's a number
+  const similarityValue =
+    typeof similarityData === 'object' && typeof similarityData.overall === 'number'
+      ? similarityData.overall
+      : 0;
+  
+  // Convert to percentage and round
+  const percentage = Math.round(similarityValue * 100);
 
     return (
         <Card className="p-4 h-64 overflow-auto">
-            <h3 className="text-lg font-semibold mb-2">Card 3</h3>
-            <p>Content for card 3</p>
+            <CardHeader>
+            <CardTitle className="text-lg font-semibold">Similarity</CardTitle>
+            <Select onValueChange={(v) => setSimilarityMeasure(v as SimilarityMeasure)} defaultValue={similarityMeasure}>
+                <SelectTrigger>
+                <SelectValue placeholder="Select similarity measure" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="trace_similarity">Trace similarity</SelectItem>
+                <SelectItem value="eventually_follows_similarity">Eventually Follows similarity</SelectItem>
+                <SelectItem value="trace_similarity_perfect">Perfect trace similarity</SelectItem>
+            </SelectContent>
+            </Select>
+        </CardHeader>
+        <CardContent className="flex-1 flex items-center justify-center">
+        <p className="text-6xl font-bold">
+          {percentage}%
+        </p>
+      </CardContent>
         </Card>
     );
 

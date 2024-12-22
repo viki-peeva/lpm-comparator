@@ -2,7 +2,7 @@ type pair = [number, number]
 
 type similarityMatrix = number[][]
 
-interface SimilarityMeasures {
+export interface SimilarityMeasures {
     trace_similarity?: {
         overall: number;
         matrix: similarityMatrix;
@@ -21,6 +21,7 @@ interface SimilarityMeasures {
         leven_sym? : pair[];
         leven_asym_1? : pair[];
         leven_asym_2? : pair[];
+        overall?: 0;
     };
 }
 
