@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
-import { ReportData, LocalProcessModel, SimilarityMeasures } from "@/types/Report";
+import { ReportData, LocalProcessModel } from "@/types/Report";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Filter, RotateCcw, SortAsc } from "lucide-react";
 import { useState } from "react";
 
@@ -87,7 +87,7 @@ const FilterPopover = ({onFilterChange, filterValues, resetFilters}: {onFilterCh
     );
 };
 
-const LPMCard =  ({side, lpms, similarityMeasures}: {side: 1 | 2; lpms: LocalProcessModel[]; similarityMeasures: SimilarityMeasures}) => {
+const LPMCard =  ({side, lpms, setSelectedSide, setSelectedLpm}: {side: 1 | 2; lpms: LocalProcessModel[]; setSelectedSide: (side:1 |2) => void; setSelectedLpm: (selectedLpm: LocalProcessModel) => void;}) => {
 
     const title = side === 1 ? "Set A" : "Set B";
     const color = side === 1 ? "hsl(var(--chart-2))" : "hsl(var(--chart-3))";
@@ -108,8 +108,6 @@ const LPMCard =  ({side, lpms, similarityMeasures}: {side: 1 | 2; lpms: LocalPro
           coverage: [0, 1]
         })
     };
-
-    const [selectedLpm, setSelectedLpm] = useState<LocalProcessModel | null>(null)
 
     const itemsPerPage = 50;
 
@@ -169,7 +167,7 @@ const LPMCard =  ({side, lpms, similarityMeasures}: {side: 1 | 2; lpms: LocalPro
             <li 
               key={lpm.id} 
               className="flex justify-between items-center p-2 hover:bg-accent cursor-pointer rounded" 
-              onClick={() => setSelectedLpm(lpm)}
+              onClick={() => {setSelectedLpm(lpm); setSelectedSide(side);}}
               style={{ borderLeft: `2px solid ${color}` }}
             >
               <span className="text-lg font-semibold">{lpm.name}</span>
@@ -215,26 +213,33 @@ const LPMCard =  ({side, lpms, similarityMeasures}: {side: 1 | 2; lpms: LocalPro
           <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
       </CardFooter>
-      <LPMDialog side={side} selectedLpm={selectedLpm} setSelectedLpm={setSelectedLpm} similarityMeasures={similarityMeasures} />
         </Card>
     );
 };
 
 export default function LpmList({report}: {report: ReportData}) {
 
+    const [selectedLpm, setSelectedLpm] = useState<LocalProcessModel | null>(null);
+    const [selectedSide, setSelectedSide] = useState<1 | 2>(1);
+
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <LPMCard 
                     side={1}
                     lpms={report.lpms_a}
-                    similarityMeasures={report.similarity ?? {}}
+                    setSelectedSide={setSelectedSide}
+                    setSelectedLpm={setSelectedLpm}
                 />
                 <LPMCard
                     side={2}
                     lpms={report.lpms_b}
-                    similarityMeasures={report.similarity ?? {}}
+                    setSelectedSide={setSelectedSide}
+                    setSelectedLpm={setSelectedLpm}
                 />
-            </div>
-        );
+                <LPMDialog side={selectedSide} setSide={setSelectedSide} selectedLpm={selectedLpm} setSelectedLpm={setSelectedLpm} lpms_a={report.lpms_a} lpms_b={report.lpms_b} />
+             
+            </div> 
+            );
+            
     
 }
