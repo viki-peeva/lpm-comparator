@@ -1,6 +1,6 @@
 import { ReportData } from "@/types/Report";
 
-export function getSimilarLPMs(report: ReportData, side: number, lpmIdx: number, threshold: number, ) {
+export function getSimilarLPMs(report: ReportData, side: number, lpmIdx: number, threshold: number) {
     const similarityMatrix = report.similarity?.trace_similarity?.matrix;
 
     const similarityVals = side === 1 ? similarityMatrix?.[lpmIdx] : similarityMatrix?.map(row => row[lpmIdx]);

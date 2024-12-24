@@ -13,7 +13,7 @@ import { Aggregation } from "@/types/Report"
 import { RadialBar, RadialBarChart } from "recharts"
 import { AnalysisPage } from "@/pages/Analysis";
 
-const ConformanceCard = ({ report, setAnalysisPage }: { report: ReportData;  setAnalysisPage: (page: AnalysisPage) => void; }) => {
+export const ConformanceCard = ({ report, setAnalysisPage }: { report: ReportData;  setAnalysisPage: (page: AnalysisPage) => void; }) => {
 
     type AggregationMethod = keyof Aggregation;
 
