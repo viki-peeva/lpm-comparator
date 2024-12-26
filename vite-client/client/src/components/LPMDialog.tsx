@@ -6,6 +6,7 @@ import axios from 'axios';
 import { ReactSVG } from 'react-svg';
 import { LocalProcessModel, ReportData } from '@/types/Report';
 import { getSimilarLPMs } from '@/computation/similarity';
+import { SimilarityMeasure, SimilaritySelection } from "@/components/SimilaritySelection";
 
 type SimilarLPM = {
   lpm_id: string;
@@ -26,6 +27,8 @@ export default function LPMDialog({
   setSelectedLpm: (lpm: LocalProcessModel | null) => void;
   report: ReportData;
 }) {
+  const [similarityMeasure, setSimilarityMeasure] = useState<SimilarityMeasure>('trace_similarity' as SimilarityMeasure);
+
   const [vis, setVis] = useState<string | null>(null);
   const [similarLPMs, setSimilarLPMs] = useState<SimilarLPM[]>([]);
 
@@ -38,6 +41,12 @@ export default function LPMDialog({
     
   }, [selectedLpm]);
 
+  useEffect(() => {
+    if (selectedLpm) {
+      fetchSimilarLPMs();
+    }
+  }, [similarityMeasure]);
+
   const fetchImage = async () => {
     try {
       const response = await axios.get(`/api/petrinet/${side}/${selectedLpm?.id}`);
@@ -47,10 +56,10 @@ export default function LPMDialog({
     }
   };
 
-  const fetchSimilarLPMs = async () => {
+  const fetchSimilarLPMs = () => {
     if(!selectedLpm) return;
 
-    const similarLPMs = getSimilarLPMs(report, side, selectedLpm.index, 0.5);
+    const similarLPMs = getSimilarLPMs(report, side, selectedLpm.index, 0.5, similarityMeasure);
     setSimilarLPMs(similarLPMs);
   }
 
@@ -119,7 +128,10 @@ export default function LPMDialog({
             <p>Coverage: {selectedLpm?.coverage.toFixed(4)}</p>
           </div>
           <div className="md:w-1/2">
-            <h3 className="text-lg font-semibold">Most Similar Models (Trace similarity)</h3>
+            <div className="flex space-x-4">
+              <h3 className="text-lg font-semibold">Most Similar Models:</h3>
+              <SimilaritySelection similarityMeasure={similarityMeasure} setSimilarityMeasure={setSimilarityMeasure}/>
+            </div>
             <ScrollArea className="h-48">
               {similarLPMs.length > 0 ? (
                 <ul className="space-y-2">

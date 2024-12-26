@@ -1,7 +1,15 @@
+import { SimilarityMeasure } from "@/components/SimilaritySelection";
 import { ReportData } from "@/types/Report";
 
-export function getSimilarLPMs(report: ReportData, side: number, lpmIdx: number, threshold: number) {
-    const similarityMatrix = report.similarity?.trace_similarity?.matrix;
+export function getSimilarLPMs(report: ReportData, side: number, lpmIdx: number, threshold: number, similarityMeasure: SimilarityMeasure) {
+    const similarityData = report.similarity?.[similarityMeasure];
+
+    const similarityMatrix =
+          typeof similarityData === 'object' ? similarityData.matrix : undefined;
+
+    if (!similarityMatrix) {
+        return [];
+    }
 
     const similarityVals = side === 1 ? similarityMatrix?.[lpmIdx] : similarityMatrix?.map(row => row[lpmIdx]);
     
