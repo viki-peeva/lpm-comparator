@@ -53,7 +53,7 @@ export default function Similarity({report}: {report: ReportData}) {
 
     return (
       <ScrollArea>
-        <Card className="h-[600px] flex flex-col mt-6">
+        <Card className=" h-[calc(100vh-8rem)] flex flex-col mt-6">
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Similarity Heatmap</CardTitle>
                 <div className="flex space-x-2">

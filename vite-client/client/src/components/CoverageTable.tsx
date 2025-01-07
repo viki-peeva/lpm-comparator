@@ -67,7 +67,7 @@ export default function CoverageTable({ report }: { report: ReportData }) {
 
   return (
     <>
-    <Card className="w-full h-[600px] mt-6">
+    <Card className="w-full h-[calc(100vh-8rem)] mt-6">
       <CardContent className="p-6">
         <div className="mb-4 flex justify-between items-center">
           <div className="flex space-x-2">
@@ -104,7 +104,7 @@ export default function CoverageTable({ report }: { report: ReportData }) {
                 <TableHead className="w-1/3 flex-shrink-0 sticky top-0 pt-2 text-center bg-white z-10" style={{borderBottom: `3px solid hsl(var(--chart-3))`}}>Coverage Set B</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="block max-h-[400px] overflow-y-auto">
+            <TableBody className="block max-h-[calc(100vh-20rem)] overflow-y-auto">
               {paginatedData.map((item, index) => (
                 <TableRow key={index} className="flex" onClick={() => setSelectedTrace(item)} style={{ cursor: 'pointer' }}>
                   <TableCell className="border-r w-1/3 flex-shrink-0 text-center">{item.coverage_a.toFixed(4)}</TableCell>

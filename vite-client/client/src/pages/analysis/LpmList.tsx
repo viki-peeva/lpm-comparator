@@ -35,7 +35,7 @@ const LPMCard =  ({side, lpms, setSelectedSide, setSelectedLpm}: {side: 1 | 2; l
 
 
     return (
-        <Card className="h-[600px] flex flex-col" style={{ borderTop: `3px solid ${color}`}}>
+        <Card className="h-[calc(100vh-8rem)] flex flex-col mt-2" style={{ borderTop: `3px solid ${color}`}}>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>{title}</CardTitle>
                 <div className="flex space-x-2">
