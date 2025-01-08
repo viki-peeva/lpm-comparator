@@ -31,8 +31,8 @@ export const ConformanceCard = ({ report, setAnalysisPage }: { report: ReportDat
     const coverageVals_B = report.lpms_b.map(lpm => lpm.coverage);  
 
     const chartData = [
-        { measure: "Fitness", setA: aggregate(aggregationMethod, fitnessVals_A, coverageVals_A), setB: aggregate(aggregationMethod, precisionVals_A, coverageVals_A) },
-        { measure: "Precision", setA: aggregate(aggregationMethod, fitnessVals_B, coverageVals_B), setB: aggregate(aggregationMethod, precisionVals_B, coverageVals_B) },
+        { measure: "Fitness", setA: aggregate(aggregationMethod, fitnessVals_A, coverageVals_A), setB: aggregate(aggregationMethod, fitnessVals_B, coverageVals_B) },
+        { measure: "Precision", setA: aggregate(aggregationMethod, precisionVals_A, coverageVals_A), setB: aggregate(aggregationMethod, precisionVals_B, coverageVals_B) },
       ]
     
     const chartConfig = {
