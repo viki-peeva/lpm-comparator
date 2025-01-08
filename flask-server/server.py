@@ -183,4 +183,6 @@ def get_variants_with_query():
     return jsonify(matching_indices)
 
 if __name__ == '__main__':
+    #If in docker, run the server with host 0.0.0.0, to allow access from outside the container, otherwise remove host
     app.run(debug=True)
+    #app.run(host='0.0.0.0', port=5000, debug=True)
