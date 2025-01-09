@@ -1,63 +1,54 @@
+import concurrent.futures
 from .lpm import LPMSet, LPM
-from pm4py.objects.log.obj import EventLog
 from typing import Tuple, List
 import numpy as np
 import pm4py
 from lpm_set_comparison_python import utils
-import concurrent.futures
 from functools import partial
-import time
-import json
 
-"""
-    with concurrent.futures.ProcessPoolExecutor(max_workers=10) as executor:
-            start_time = time.time()
-            log_coverage_masks_a = list(executor.map(partial_model_coverage, set_a.lpms))
-            coverage_a, duplicate_coverage_a = compute_coverage_from_masks(log_coverage_masks_a)
-            end_time = time.time()
-            print(f"Computing time in seconds: {(end_time - start_time)}")
-            print("Coverage A: ", coverage_a)
+def compute_coverage_multi_processing_setwise(set: LPMSet, traces: List[Tuple[str]], executor: concurrent.futures.ProcessPoolExecutor):
+    partial_model_coverage = partial(compute_model_coverage, traces=traces)
+    model_coverage_and_masks = list(executor.map(partial_model_coverage, set.lpms))
+    events_covered, model_coverage = zip(*model_coverage_and_masks)
+    return compute_coverage_from_masks(events_covered), model_coverage
+    
 
-            start_time = time.time()
-            log_coverage_masks_b = list(executor.map(partial_model_coverage, set_b.lpms))
-            coverage_b, duplicate_coverage_b = compute_coverage_from_masks(log_coverage_masks_b)
-            end_time = time.time()
-            print(f"Computing time in seconds: {(end_time - start_time)}")
-            print("Coverage B: ", coverage_b)
+def compute_coverage_multi_processing(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]], executor: concurrent.futures.ProcessPoolExecutor):
+    (coverage_a, duplicate_coverage_a, trace_coverages_a, combined_mask_a), model_coverage_a = compute_coverage_multi_processing_setwise(set_a, traces, executor)
+    (coverage_b, duplicate_coverage_b, trace_coverages_b, combined_mask_b), model_coverage_b = compute_coverage_multi_processing_setwise(set_b, traces, executor)
 
-            print("Start computing fitness and precision values for set A")
-            start_time = time.time()
-            fitness_precision_values_a = list(executor.map(partial_fitness_precision_on_traces, set_a.lpms))
-            end_time = time.time()
-            print(f"Computing time in seconds: {(end_time - start_time)}")
+    variants_idx = utils.get_indices_of_variants(traces)
+    variants = [", ".join(traces[i]) for i in variants_idx]
 
-            print("Start computing fitness and precision values for set B")
-            start_time = time.time()
-            fitness_precision_values_b = list(executor.map(partial_fitness_precision_on_traces, set_b.lpms))
-            end_time = time.time()
-            print(f"Computing time in seconds: {(end_time - start_time)}")
-"""
+    short_trace_strings = [utils.get_short_trace_string(trace) for trace in traces]
+
+    trace_coverages = [{"id": i, "trace": short_trace_strings[i],"coverage_a": trace_coverages_a[i], "coverage_b": trace_coverages_b[i]} for i in variants_idx]
+    
+    coverages = {
+        "coverage_a": coverage_a,
+        "duplicate_coverage_a": duplicate_coverage_a,
+        "model_coverage_a": model_coverage_a,
+        "coverage_b": coverage_b,
+        "duplicate_coverage_b": duplicate_coverage_b,
+        "model_coverage_b": model_coverage_b,
+        "trace_coverages": trace_coverages
+    }
+
+    masks = {
+        "mask_a": combined_mask_a,
+        "mask_b": combined_mask_b
+    }
+
+    return coverages, masks, variants    
 
 def compute_coverage(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]]):
     coverage_a, duplicate_coverage_a, coverage_b, duplicate_coverage_b = 0, 0, 0, 0
     partial_model_coverage = partial(compute_model_coverage, traces=traces)
 
-    log_coverage_masks_a = []
-    model_coverage_a = []
-    for lpm in set_a.lpms:
-        events_covered, model_coverage = compute_model_coverage(lpm, traces)
-        log_coverage_masks_a.append(events_covered)
-        model_coverage_a.append(model_coverage)
+    events_covered_a, model_coverage_a = zip(*list(map(partial_model_coverage, set_a.lpms)))
+    coverage_a, duplicate_coverage_a, trace_coverages_a, combined_mask_a = compute_coverage_from_masks(events_covered_a)
 
-    coverage_a, duplicate_coverage_a, trace_coverages_a, combined_mask_a = compute_coverage_from_masks(log_coverage_masks_a)
-
-    log_coverage_masks_b = list(map(partial_model_coverage, set_b.lpms))
-    model_coverage_b = []
-    events_covered_b = []
-    for log_coverage_mask in log_coverage_masks_b:
-        events_covered, model_coverage = log_coverage_mask
-        events_covered_b.append(events_covered)
-        model_coverage_b.append(model_coverage)
+    events_covered_b, model_coverage_b = zip(*list(map(partial_model_coverage, set_b.lpms)))
     coverage_b, duplicate_coverage_b, trace_coverages_b, combined_mask_b = compute_coverage_from_masks(events_covered_b)
 
     variants_idx = utils.get_indices_of_variants(traces)
@@ -84,20 +75,18 @@ def compute_coverage(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]]):
 
     return results, masks, variants
 
-def compute_conformance_measures(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]]):
-    fitness_precision_values_a = []
-    fitness_precision_values_b = []
-    
+def compute_conformance_measures_multi_processing(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]], executor: concurrent.futures.ProcessPoolExecutor):
     partial_fitness_precision_on_traces = partial(compute_fitness_precision_on_subtraces, traces=traces)
 
-    fitness_precision_values_a = list(map(partial_fitness_precision_on_traces, set_a.lpms))
-    fitness_precision_values_b = list(map(partial_fitness_precision_on_traces, set_b.lpms))
+    executor.map(partial_fitness_precision_on_traces, set_a.lpms)
+    executor.map(partial_fitness_precision_on_traces, set_b.lpms)
+
+def compute_conformance_measures(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]]):
+    partial_fitness_precision_on_traces = partial(compute_fitness_precision_on_subtraces, traces=traces)
+
+    list(map(partial_fitness_precision_on_traces, set_a.lpms))
+    list(map(partial_fitness_precision_on_traces, set_b.lpms))
     
-    results = {
-        "fitness_precision_values_a": fitness_precision_values_a,
-        "fitness_precision_values_b": fitness_precision_values_b
-    }
-    return results
 
 def compute_coverage_from_masks(log_coverage_masks: List[List[np.ndarray]]):
     #Combine all masks
