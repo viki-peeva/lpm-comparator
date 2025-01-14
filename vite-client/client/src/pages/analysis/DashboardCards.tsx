@@ -9,7 +9,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { Aggregation } from "@/types/Report"
 import { RadialBar, RadialBarChart } from "recharts"
 import { AnalysisPage } from "@/pages/Analysis";
 import { SimilarityMeasure, SimilaritySelection } from "@/components/SimilaritySelection";

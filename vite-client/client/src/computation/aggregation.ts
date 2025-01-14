@@ -108,6 +108,9 @@ const weightedGeometricMean = (values : number[], weights: number[]) => {
     let sumWeights = 0;
 
     for(let i = 0; i < values.length; i++) {
+        if(values[i] === 0) {
+            continue;
+        }
         sum += weights[i] * Math.log(values[i]);
         sumWeights += weights[i];
     }
@@ -123,6 +126,9 @@ const geometricMean = (values : number[]) => {
     let sum = 0;
 
     for(let i = 0; i < values.length; i++) {
+        if(values[i] === 0) {
+            continue;
+        }
         sum += Math.log(values[i]);
     }
 
