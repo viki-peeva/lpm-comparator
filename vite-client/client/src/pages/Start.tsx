@@ -57,6 +57,8 @@ export default function StartPage({
      
         ):(
           <div className="flex flex-col items-center justify-center h-[calc(100vh-2rem)] space-y-4">
+            <img src="src/assets/Logo.svg" alt="logo" className="h-40 w-40" />
+            
             <Button onClick={() => setCurrentPage("upload")} size="lg" className="text-lg">
               Start New Analysis <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
