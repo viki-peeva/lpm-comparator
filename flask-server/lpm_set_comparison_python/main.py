@@ -1,6 +1,6 @@
 from .conformance_computation import compute_conformance_measures, compute_conformance_measures_multi_processing, compute_coverage, compute_coverage_multi_processing
 from .similarity_computation import compute_similarity_measures
-from .aggregation import get_aggregated_measures
+from .aggregation import get_evaluation_measures
 from typing import List, Optional, Tuple
 from .lpm import LPMSet
 import json
@@ -19,7 +19,7 @@ def calculate_report(
     report = {}
     if not pipeline:
         yield f"data: {json.dumps({'state': 'IN_PROGRESS', 'message': 'Computing similarity...'})}\n\n"
-    similarity_report = compute_similarity_measures(set_a, set_b)
+    similarity_report, matchings = compute_similarity_measures(set_a, set_b)
 
     report["similarity"] = similarity_report
     print("Computed similarity measures")
@@ -59,9 +59,9 @@ def calculate_report(
 
         if not pipeline:
             yield f"data: {json.dumps({'state': 'IN_PROGRESS', 'message': 'Computing aggregations...'})}\n\n"
-        matchings = similarity_report["matchings"]
-        report["fitness_aggregation"] = get_aggregated_measures(set_a, set_b, matchings, measure="fitness")
-        report["precision_aggregation"] = get_aggregated_measures(set_a, set_b, matchings, measure="precision")
+        
+        report["fitness_evaluation"] = get_evaluation_measures(set_a, set_b, matchings, measure="fitness")
+        report["precision_evaluation"] = get_evaluation_measures(set_a, set_b, matchings, measure="precision")
         print("Computed aggregations")
 
         lpms_a = []

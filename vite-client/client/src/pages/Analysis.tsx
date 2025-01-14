@@ -14,6 +14,7 @@ import AnalysisConformance from "@/pages/analysis/Conformance";
 import Similarity from "./analysis/Similarity";
 import CoverageTable from "@/components/CoverageTable";
 import { EulerDiagram } from "@/components/EulerDiagram";
+import EvaluationReport from "./analysis/Evaluation";
 
 
 export type AnalysisPage = "overview" | "list"| "conformance" | "similarity" | "coverage" | "evaluation" | "setRelation";
@@ -135,7 +136,7 @@ export default function AnalysisPage({
             <Similarity report={report} />
           </TabsContent>
           <TabsContent value="coverage"><CoverageTable report={report}/></TabsContent>
-          <TabsContent value="evaluation">Evaluation content</TabsContent>
+          <TabsContent value="evaluation"><EvaluationReport report={report}/></TabsContent>
           <TabsContent value="setRelation"><EulerDiagram report={report}/> </TabsContent>
         </Tabs>
       </div>

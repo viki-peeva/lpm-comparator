@@ -106,9 +106,6 @@ def compute_similarity_measures(set_a: LPMSet, set_b: LPMSet):
     similarity_matrix_eventually_follows = compute_pairwise_similarity_measures(set_a, set_b, compute_eventually_follows_similarity)
     similarity_matrix_perfect = compute_pairwise_similarity_measures(set_a, set_b, compute_trace_similarity_perfect)
 
-
-    a_subset_b, b_subset_a = check_subset(simlarity_matrix_leven)
-
     #Create matchings
     matchings = {}
     matchings["leven_sym"] = create_symmetric_optimal_matching(simlarity_matrix_leven_np)
@@ -128,9 +125,6 @@ def compute_similarity_measures(set_a: LPMSet, set_b: LPMSet):
             "overall": compute_trace_similarity_perfect(set_a, set_b),
             "matrix": similarity_matrix_perfect
         },
-        "a_subset_b": f"{a_subset_b}",
-        "b_subset_a": f"{b_subset_a}",
-        "matchings": matchings
     }
 
-    return results
+    return results, matchings

@@ -15,37 +15,29 @@ export interface SimilarityMeasures {
         overall: number;
         matrix: similarityMatrix;
     };
-    a_subset_b?: boolean;
-    b_subset_a?: boolean;
-    matchings?: {
-        leven_sym? : pair[];
-        leven_asym_1? : pair[];
-        leven_asym_2? : pair[];
-        overall?: 0;
-        matrix?: undefined;
-    };
 }
 
-export interface Aggregation {
-    weighted_harmonic_mean?: pair;
-    arithmetic_avg?: pair;
-    geometric_mean?: pair;
-    harmonic_mean?: pair;
-    weighted_arithmetic_avg?: pair;
-    weighted_geometric_mean?: pair;
+export interface DominanceCount {
+    dom_count_a?: number;
+    dom_count_b?: number;
+    matching: [string, string][];
 }
 
 interface Evaluation {
     dominance_counting?: {
-        leven_sym?: pair;
-        leven_asym_1?: pair;
-        leven_asym_2?: pair;
+        leven_sym?: DominanceCount;
+        leven_asym_1?: DominanceCount;
+        leven_asym_2?: DominanceCount;
     };
     rank_aggregation?: {
         rank_sum_a?: number;
         rank_sum_b?: number;
         normalized_rank_sum_a?: number;
         normalized_rank_sum_b?: number;
+        ranking_ids?: {
+            side: number;
+            id: string;
+        }[];
     };
 }
 
@@ -77,8 +69,6 @@ export interface ReportData {
         duplicate_coverage_b: number;
         trace_coverages?: Trace[];
     };
-    fitness_aggregation?: Aggregation;
-    precision_aggregation?: Aggregation;
     fitness_evaluation?: Evaluation;
     precision_evaluation?: Evaluation;
     lpms_a: LocalProcessModel[];
