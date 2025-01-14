@@ -37,6 +37,7 @@ interface Evaluation {
     ranking_ids?: {
       side: number;
       id: string;
+      rank: number;
     }[];
   };
 }

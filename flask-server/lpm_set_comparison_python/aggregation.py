@@ -1,3 +1,4 @@
+from collections import defaultdict
 from lpm_set_comparison_python.lpm import LPMSet
 
 def get_evaluation_measures(LPMs_a: LPMSet, LPMs_b: LPMSet, matchings, measure="fitness"):
@@ -53,6 +54,22 @@ def compute_dominance_counting(LPMs_a: LPMSet, LPMs_b: LPMSet, matching, measure
 
     return (dom_count_a, dom_count_b), matching_with_ids
 
+
+def compute_ranking(measure, elements, decimal_places=4):
+    groups = defaultdict(list)
+    for item in elements:
+        if measure == "fitness":
+            value = round(item.get_fitness(), decimal_places)
+        elif measure == "precision":
+            value = round(item.get_precision(), decimal_places)
+        else:
+            value = 0
+        groups[value].append(item)
+
+    sorted_groups = sorted(groups.items(),key=lambda x: x[0], reverse=True)
+    
+    return [group for _ , group in sorted_groups]
+
 def compute_rank_aggregation(LPMs_a: LPMSet, LPMs_b: LPMSet, measure = "fitness"):
     """
     Takes the two sets of LPMs as an input and a measure on which to compare the LPMs.
@@ -62,24 +79,21 @@ def compute_rank_aggregation(LPMs_a: LPMSet, LPMs_b: LPMSet, measure = "fitness"
     LPMs_b.mark_belongs_to_set(1)
 
     all_lpms = LPMs_a.lpms + LPMs_b.lpms
-    if measure == "fitness":
-        all_lpms.sort(key=lambda x: x.get_fitness(), reverse=True)
-    elif measure == "precision":
-        all_lpms.sort(key=lambda x: x.get_precision(), reverse=True)
-    else:
-        return (0, 0)
+    
+    ranking = compute_ranking(measure, all_lpms)
     
     ranking_ids = []
     
     rank_sum_a = 0
     rank_sum_b = 0
-    for i, lpm in enumerate(all_lpms):
-        if lpm.belongs_to_set == 0:
-            rank_sum_a += (i +1)
-            ranking_ids.append({"side": 1, "id": lpm.id})
-        else:
-            rank_sum_b += (i+1)
-            ranking_ids.append({"side": 2, "id": lpm.id})
+    for i, lpms in enumerate(ranking):
+        for lpm in lpms:
+            if lpm.belongs_to_set == 0:
+                rank_sum_a += (i +1)
+                ranking_ids.append({"side": 1, "id": lpm.id, "rank": i+1})
+            else:
+                rank_sum_b += (i+1)
+                ranking_ids.append({"side": 2, "id": lpm.id, "rank": i+1})
     
     LPMs_a.unmark_belongs_to_set()
     LPMs_b.unmark_belongs_to_set()
