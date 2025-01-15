@@ -5,7 +5,7 @@ export function getSimilarLPMs(
   report: ReportData,
   side: number,
   lpmIdx: number,
-  threshold: number,
+  maxReturned: number,
   similarityMeasure: SimilarityMeasure,
 ) {
   const similarityData = report.similarity?.[similarityMeasure];
@@ -32,10 +32,10 @@ export function getSimilarLPMs(
       name: lpms[idx].name,
       similarity,
     }))
-    .filter((sim) => sim.similarity >= threshold)
+    .filter((sim) => sim.similarity > 0)
     .sort((a, b) => b.similarity - a.similarity);
 
-  return mostSimilar;
+  return mostSimilar.slice(0, maxReturned);
 }
 
 export function getDataForVennDiagram(

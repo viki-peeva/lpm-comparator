@@ -32,6 +32,8 @@ import {
   SimilaritySelection,
 } from '@/components/SimilaritySelection';
 import { aggregate, aggregationMethod } from '@/computation/aggregation';
+import { EulerDiagram } from '@/components/EulerDiagram';
+import { Slider } from '@/components/ui/slider';
 
 export const ConformanceCard = ({
   report,
@@ -152,23 +154,19 @@ const CoverageCard = ({
   setAnalysisPage: (page: AnalysisPage) => void;
 }) => {
   const chartData = [
-    { lpmSet: '', coverage: 1, fill: 'white' },
     {
-      lpmSet: 'setA',
-      coverage: report.coverage?.coverage_a,
-      fill: 'hsl(var(--chart-2))',
+      measure: 'Coverage',
+      setA: report.coverage?.coverage_a,
+      setB: report.coverage?.coverage_b,
     },
     {
-      lpmSet: 'setB',
-      coverage: report.coverage?.coverage_b,
-      fill: 'hsl(var(--chart-3))',
+      measure: 'Duplicate Coverage',
+      setA: report.coverage?.duplicate_coverage_a,
+      setB: report.coverage?.duplicate_coverage_b,
     },
   ];
 
   const chartConfig = {
-    coverage: {
-      label: 'Coverage',
-    },
     setA: {
       label: 'Set A',
       color: 'hsl(var(--chart-2))',
@@ -191,25 +189,42 @@ const CoverageCard = ({
           </button>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 pt-0 h-full">
+      <CardContent className="flex-1 pt-0 mt-[-1rem] h-5/6">
         <ChartContainer
           config={chartConfig}
-          className="h-[70%] mt-0 aspect-square mx-auto"
+          className="w-full min-w-full h-full min-h-full"
         >
-          <RadialBarChart data={chartData} innerRadius="10%" outerRadius="100%">
+          <BarChart
+            layout="vertical" // Step 1: Set layout to vertical for horizontal bars
+            accessibilityLayer
+            data={chartData}
+            barCategoryGap={20}
+          >
+            <CartesianGrid horizontal={false} />{' '}
+            {/* Adjust grid lines if needed */}
+            <XAxis
+              type="number" // Step 2: X-axis now represents numeric values
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              domain={[0, 1]} // Retain domain if applicable
+              padding={{ left: 0, right: 0 }} // Adjust padding as needed
+            />
+            <YAxis
+              dataKey="measure" // Step 2: Y-axis now uses dataKey for categories
+              type="category"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              padding={{ top: 0, bottom: 0 }} // Adjust padding as needed
+            />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent hideLabel nameKey="lpmSet" />}
+              content={<ChartTooltipContent indicator="dot" />}
             />
-            <RadialBar dataKey="coverage" background className="h-5/6">
-              <LabelList
-                position="insideStart"
-                dataKey="lpmSet"
-                className="fill-white capitalize mix-blend-luminosity"
-                fontSize={11}
-              />
-            </RadialBar>
-          </RadialBarChart>
+            <Bar dataKey="setA" fill="var(--color-setA)" radius={4} />
+            <Bar dataKey="setB" fill="var(--color-setB)" radius={4} />
+          </BarChart>
         </ChartContainer>
       </CardContent>
     </Card>
@@ -348,118 +363,58 @@ const SimilarityCard = ({
   );
 };
 
-const EvaluationCard = ({
+const SetRelationCard = ({
   report,
   setAnalysisPage,
 }: {
   report: ReportData;
   setAnalysisPage: (page: AnalysisPage) => void;
 }) => {
-  const setAWins = 6;
-  const setBWins = 7;
-
-  const totalWins = setAWins + setBWins;
-  const winningThreshold = Math.ceil(totalWins / 2);
-
-  // Determine the winner
-  let winner: 'A' | 'B' | null = null;
-  if (setAWins > setBWins) {
-    winner = 'A';
-  } else if (setBWins > setAWins) {
-    winner = 'B';
-  } else {
-    winner = null; // Draw
-  }
-
-  // Prepare data for the chart
-  const chartData = [
-    {
-      name: 'Wins',
-      'Set A': setAWins,
-      'Set B': setBWins,
-    },
-  ];
-
-  // Styles for Set A and Set B Texts
-  const getSetTextStyle = (set: 'A' | 'B') => {
-    if (winner === set) {
-      const borderColor =
-        set === 'A' ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-3))';
-      return {
-        borderColor: borderColor,
-        borderWidth: '2px',
-        borderStyle: 'solid',
-        borderRadius: '9999px',
-        padding: '0.25rem 0.75rem',
-        whiteSpace: 'nowrap',
-      };
-    } else {
-      return {};
-    }
-  };
+  const [similarityMeasure, setSimilarityMeasure] = useState<SimilarityMeasure>(
+    'trace_similarity' as SimilarityMeasure,
+  );
+  const [threshold, setThreshold] = useState(0.9);
 
   return (
-    <Card className="h-64 flex flex-col">
-      <CardHeader>
+    <Card className="h-64 overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between mb-0">
         <CardTitle>
           <button
-            onClick={() => setAnalysisPage('evaluation')}
+            onClick={() => setAnalysisPage('setRelation')}
             className="text-lg font-semibold cursor-pointer hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            Evaluation
+            Set Relation
           </button>
         </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col justify-start">
-        <div className="flex items-center justify-between px-4">
-          <div className="text-xl font-bold" style={getSetTextStyle('A')}>
-            Set A
-          </div>
-          <div className="text-xl font-bold" style={getSetTextStyle('B')}>
-            Set B
+        <div className="flex space-x-2">
+          <div className="flex items-center space-x-2">
+            <SimilaritySelection
+              similarityMeasure={similarityMeasure}
+              setSimilarityMeasure={setSimilarityMeasure}
+            />
+            <div className="flex flex-col items-center">
+              <span className="text-sm text-gray-500 mb-2">
+                Threshold:{threshold.toFixed(2)}
+              </span>
+              <Slider
+                min={0}
+                max={1}
+                step={0.01}
+                value={[threshold]}
+                onValueChange={(value) => setThreshold(value[0])}
+                className="w-24"
+              />
+            </div>
           </div>
         </div>
-        <div className="flex-1 flex px-4 mt-0">
-          <ResponsiveContainer width="100%" height={90}>
-            <BarChart
-              data={chartData}
-              layout="vertical"
-              margin={{ top: 5, right: 0, bottom: 25, left: 0 }}
-            >
-              <XAxis type="number" hide domain={[0, totalWins]} />
-              <YAxis type="category" dataKey="name" hide />
-              <Tooltip
-                formatter={(value, name) => [`${value} wins`, name]}
-                labelFormatter={() => ''}
-              />
-              <Bar
-                dataKey="Set A"
-                stackId="a"
-                fill="hsl(var(--chart-2))"
-                radius={[4, 0, 0, 4]}
-                isAnimationActive={true}
-              />
-              <Bar
-                dataKey="Set B"
-                stackId="a"
-                fill="hsl(var(--chart-3))"
-                radius={[0, 4, 4, 0]}
-                isAnimationActive={true}
-              />
-              <ReferenceLine
-                x={winningThreshold}
-                stroke="black"
-                strokeDasharray="3 3"
-                label={{
-                  position: 'bottom',
-                  value: `Winning Threshold: ${winningThreshold}`,
-                  fill: 'black',
-                  fontSize: 12,
-                  dy: 5,
-                }}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+      </CardHeader>
+      <CardContent className="items-center justify-center">
+        <div className="h-60 w-80">
+          <EulerDiagram
+            report={report}
+            similarityMeasure={similarityMeasure}
+            threshold={threshold}
+          />
         </div>
       </CardContent>
     </Card>
@@ -479,7 +434,7 @@ export default function AnalysisOverview({
       <CoverageCard report={report} setAnalysisPage={setAnalysisPage} />
       <CardinalityCard report={report} setAnalysisPage={setAnalysisPage} />
       <SimilarityCard report={report} setAnalysisPage={setAnalysisPage} />
-      <EvaluationCard report={report} setAnalysisPage={setAnalysisPage} />
+      <SetRelationCard report={report} setAnalysisPage={setAnalysisPage} />
     </div>
   );
 }

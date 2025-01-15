@@ -74,7 +74,7 @@ export default function LPMDialog({
       report,
       side,
       selectedLpm.index,
-      0.5,
+      10,
       similarityMeasure,
     );
     setSimilarLPMs(similarLPMs);

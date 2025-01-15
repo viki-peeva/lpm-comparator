@@ -11,10 +11,10 @@ import AnalysisOverview from '@/pages/analysis/DashboardCards';
 import LpmList from '@/pages/analysis/LpmList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AnalysisConformance from '@/pages/analysis/Conformance';
-import Similarity from './analysis/Similarity';
+import Similarity from '@/pages/analysis/Similarity';
 import CoverageTable from '@/components/CoverageTable';
-import { EulerDiagram } from '@/components/EulerDiagram';
-import EvaluationReport from './analysis/Evaluation';
+import EvaluationReport from '@/pages/analysis/Evaluation';
+import { SetRelation } from '@/pages/analysis/SetRelation';
 
 export type AnalysisPage =
   | 'overview'
@@ -166,7 +166,7 @@ export default function AnalysisPage({
                   <EvaluationReport report={report} />
                 </TabsContent>
                 <TabsContent value="setRelation">
-                  <EulerDiagram report={report} />{' '}
+                  <SetRelation report={report} />{' '}
                 </TabsContent>
               </Tabs>
             </div>
