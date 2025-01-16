@@ -245,7 +245,7 @@ def compute_fitness_precision_on_subtraces(model: LPM, traces):
     print(f"Length of subtraces: {len(subtraces)}")
     print(f"Number variants: {len(set(subtraces))}")
 
-    event_log = utils.create_event_log_from_traces(list(set(subtraces)))
+    event_log = utils.create_event_log_from_traces(list(subtraces))
 
     #fitness =  pm4py.fitness_alignments(event_log, model.net, model.im, model.fm)["averageFitness"]
     #precision = pm4py.precision_alignments(event_log, model.net, model.im, model.fm)

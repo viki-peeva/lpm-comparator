@@ -39,6 +39,8 @@ def get_subtraces_for_model(traces, model: LPM):
             for end_idx in end_indices:
                 if start_idx < end_idx:
                     subtraces.append(get_projected_trace_on_model(trace[start_idx:end_idx+1], model))
+                elif start_idx == end_idx:
+                    subtraces.append(get_projected_trace_on_model([trace[start_idx]], model))
     
     return subtraces
 
