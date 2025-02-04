@@ -1,4 +1,5 @@
 import concurrent.futures
+import time
 from .lpm import LPMSet, LPM
 from typing import Tuple, List
 import numpy as np
@@ -14,8 +15,11 @@ def compute_coverage_multi_processing_setwise(set: LPMSet, traces: List[Tuple[st
     
 
 def compute_coverage_multi_processing(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]], executor: concurrent.futures.ProcessPoolExecutor):
+    time_1 = time.perf_counter()
     (coverage_a, duplicate_coverage_a, trace_coverages_a, combined_mask_a), model_coverage_a = compute_coverage_multi_processing_setwise(set_a, traces, executor)
+    time_2 = time.perf_counter()
     (coverage_b, duplicate_coverage_b, trace_coverages_b, combined_mask_b), model_coverage_b = compute_coverage_multi_processing_setwise(set_b, traces, executor)
+    time_3 = time.perf_counter()
 
     variants_idx = utils.get_indices_of_variants(traces)
     variants = [", ".join(traces[i]) for i in variants_idx]
@@ -45,17 +49,25 @@ def compute_coverage_multi_processing(set_a: LPMSet, set_b: LPMSet, traces: List
     for i, lpm in enumerate(set_b.lpms):
         lpm.coverage = model_coverage_b[i]
 
-    return coverages, masks, variants    
+    times = {
+        "model_coverage_a": time_2 - time_1,
+        "model_coverage_b": time_3 - time_2
+    }
+
+    return coverages, masks, variants, times    
 
 def compute_coverage(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]]):
     coverage_a, duplicate_coverage_a, coverage_b, duplicate_coverage_b = 0, 0, 0, 0
     partial_model_coverage = partial(compute_model_coverage, traces=traces)
 
+    time_1 = time.perf_counter()
     events_covered_a, model_coverage_a = zip(*list(map(partial_model_coverage, set_a.lpms)))
     coverage_a, duplicate_coverage_a, trace_coverages_a, combined_mask_a = compute_coverage_from_masks(events_covered_a)
+    time_2 = time.perf_counter()
 
     events_covered_b, model_coverage_b = zip(*list(map(partial_model_coverage, set_b.lpms)))
     coverage_b, duplicate_coverage_b, trace_coverages_b, combined_mask_b = compute_coverage_from_masks(events_covered_b)
+    time_3 = time.perf_counter()
 
     variants_idx = utils.get_indices_of_variants(traces)
     variants = [", ".join(traces[i]) for i in variants_idx]
@@ -79,13 +91,20 @@ def compute_coverage(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]]):
         "mask_b": combined_mask_b
     }
 
-    return results, masks, variants
+    times = {
+        "model_coverage_a": time_2 - time_1,
+        "model_coverage_b": time_3 - time_2
+    }
+
+    return results, masks, variants, times
 
 def compute_conformance_measures_multi_processing(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]], executor: concurrent.futures.ProcessPoolExecutor):
     partial_fitness_precision_on_traces = partial(compute_fitness_precision_on_subtraces, traces=traces)
-
+    time_1 = time.perf_counter()
     fitness_precision_a = list(executor.map(partial_fitness_precision_on_traces, set_a.lpms))
+    time_2 = time.perf_counter()
     fitness_precision_b = list(executor.map(partial_fitness_precision_on_traces, set_b.lpms))
+    time_3 = time.perf_counter()
 
     for i, lpm in enumerate(set_a.lpms):
         lpm.fitness = fitness_precision_a[i][0]
@@ -95,12 +114,62 @@ def compute_conformance_measures_multi_processing(set_a: LPMSet, set_b: LPMSet, 
         lpm.fitness = fitness_precision_b[i][0]
         lpm.precision = fitness_precision_b[i][1]
 
+    fitness_times_a = [val[2] for val in fitness_precision_a]
+    avg_fitness_time_a = sum(fitness_times_a) / len(fitness_times_a)
+    precision_times_a = [val[3] for val in fitness_precision_a]
+    avg_precision_time_a = sum(precision_times_a) / len(precision_times_a)
+    fitness_times_b = [val[2] for val in fitness_precision_b]
+    avg_fitness_time_b = sum(fitness_times_b) / len(fitness_times_b)
+    precision_times_b = [val[3] for val in fitness_precision_b]
+    avg_precision_time_b = sum(precision_times_b) / len(precision_times_b)
+
+    times = {
+        "fitness_precision_a": time_2 - time_1,
+        "fitness_precision_b": time_3 - time_2,
+        "avg_fitness_time_a": avg_fitness_time_a,
+        "avg_precision_time_a": avg_precision_time_a,
+        "avg_fitness_time_b": avg_fitness_time_b,
+        "avg_precision_time_b": avg_precision_time_b,
+        "fitness_times_a": fitness_times_a,
+        "precision_times_a": precision_times_a,
+        "fitness_times_b": fitness_times_b,
+        "precision_times_b": precision_times_b
+    }
+
+    return times
+
 def compute_conformance_measures(set_a: LPMSet, set_b: LPMSet, traces: List[Tuple[str]]):
     partial_fitness_precision_on_traces = partial(compute_fitness_precision_on_subtraces, traces=traces)
 
-    list(map(partial_fitness_precision_on_traces, set_a.lpms))
-    list(map(partial_fitness_precision_on_traces, set_b.lpms))
+    time_1 = time.perf_counter()
+    fitness_precision_a = list(map(partial_fitness_precision_on_traces, set_a.lpms))
+    time_2 = time.perf_counter()
+    fitness_precision_b = list(map(partial_fitness_precision_on_traces, set_b.lpms))
+    time_3 = time.perf_counter()
     
+    fitness_times_a = [val[2] for val in fitness_precision_a]
+    avg_fitness_time_a = sum(fitness_times_a) / len(fitness_times_a)
+    precision_times_a = [val[3] for val in fitness_precision_a]
+    avg_precision_time_a = sum(precision_times_a) / len(precision_times_a)
+    fitness_times_b = [val[2] for val in fitness_precision_b]
+    avg_fitness_time_b = sum(fitness_times_b) / len(fitness_times_b)
+    precision_times_b = [val[3] for val in fitness_precision_b]
+    avg_precision_time_b = sum(precision_times_b) / len(precision_times_b)
+
+    times = {
+        "fitness_precision_a": time_2 - time_1,
+        "fitness_precision_b": time_3 - time_2,
+        "avg_fitness_time_a": avg_fitness_time_a,
+        "avg_precision_time_a": avg_precision_time_a,
+        "avg_fitness_time_b": avg_fitness_time_b,
+        "avg_precision_time_b": avg_precision_time_b,
+        "fitness_times_a": fitness_times_a,
+        "precision_times_a": precision_times_a,
+        "fitness_times_b": fitness_times_b,
+        "precision_times_b": precision_times_b
+    }
+
+    return times
 
 def compute_coverage_from_masks(log_coverage_masks: List[List[np.ndarray]]):
     #Combine all masks
@@ -255,13 +324,15 @@ def compute_fitness_precision_on_subtraces(model: LPM, traces):
 
     #fitness = pm4py.conformance.fitness_alignments(event_log, model.net, model.im, model.fm)
     #precision = pm4py.conformance.precision_alignments(event_log, model.net, model.im, model.fm)
-
+    time_1 = time.perf_counter()
     fitness = pm4py.conformance.fitness_token_based_replay(event_log, model.net, model.im, model.fm)["log_fitness"]
+    time_2 = time.perf_counter()
     precision = pm4py.conformance.precision_token_based_replay(event_log, model.net, model.im, model.fm)
+    time_3 = time.perf_counter()
     model.fitness = fitness
     model.precision = precision
 
-    return fitness, precision
+    return fitness, precision, time_2 - time_1, time_3 - time_2
 
 """
 Replaying can either be done using standard replying techniques but on subsequences or as a relaxed replay. However, how do you then compute the coverage? All events that are part of a trace of a model.

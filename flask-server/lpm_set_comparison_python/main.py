@@ -16,12 +16,16 @@ def calculate_report(
     pipeline: Optional[bool] = False
 ):
     # Create a dictionary to store the results of the comparison
+    times = {}
     report = {}
     if not pipeline:
         yield f"data: {json.dumps({'state': 'IN_PROGRESS', 'message': 'Computing similarity...'})}\n\n"
-    similarity_report, matchings = compute_similarity_measures(set_a, set_b)
+    start_similarity_time = time.perf_counter()
+    similarity_report, matchings, sim_times = compute_similarity_measures(set_a, set_b)
+    time_similarity = time.perf_counter() - start_similarity_time
 
     report["similarity"] = similarity_report
+    times["similarity"] = sim_times
     print("Computed similarity measures")
 
     if event_log is not None:
@@ -31,30 +35,30 @@ def calculate_report(
             #Use multiprocessing
             print("Using multiprocessing")
             with concurrent.futures.ProcessPoolExecutor() as executor:
-                start_coverage_time = time.time()
-                report["coverage"], masks, variants = compute_coverage_multi_processing(set_a, set_b, event_log, executor)
-                time_coverage = time.time() - start_coverage_time
+                start_coverage_time = time.perf_counter()
+                report["coverage"], masks, variants, times["coverage"] = compute_coverage_multi_processing(set_a, set_b, event_log, executor)
+                time_coverage = time.perf_counter() - start_coverage_time
                 print(f"Computed coverage in {time_coverage} seconds")
 
                 if not pipeline:
                     yield f"data: {json.dumps({'state': 'IN_PROGRESS', 'message': 'Computing conformance...'})}\n\n"
 
-                start_conformance_time = time.time()
-                compute_conformance_measures_multi_processing(set_a, set_b, event_log, executor)
-            time_conformance = time.time() - start_conformance_time
+                start_conformance_time = time.perf_counter()
+                times["conformance"] = compute_conformance_measures_multi_processing(set_a, set_b, event_log, executor)
+            time_conformance = time.perf_counter() - start_conformance_time
             print(f"Computed conformance measures in {time_conformance} seconds")
         else: 
-            start_coverage_time = time.time()
-            report["coverage"], masks, variants = compute_coverage(set_a, set_b, event_log)
-            time_coverage = time.time() - start_coverage_time
+            start_coverage_time = time.perf_counter()
+            report["coverage"], masks, variants, times["coverage"] = compute_coverage(set_a, set_b, event_log)
+            time_coverage = time.perf_counter() - start_coverage_time
             print("Computed coverage")
 
             if not pipeline:
                 yield f"data: {json.dumps({'state': 'IN_PROGRESS', 'message': 'Computing conformance...'})}\n\n"
             
-            start_conformance_time = time.time()
-            compute_conformance_measures(set_a, set_b, event_log)
-            time_conformance = time.time() - start_conformance_time
+            start_conformance_time = time.perf_counter()
+            times["conformance"] = compute_conformance_measures(set_a, set_b, event_log)
+            time_conformance = time.perf_counter() - start_conformance_time
             print("Computed conformance measures")
 
         if not pipeline:
@@ -100,6 +104,8 @@ def calculate_report(
 
 
     if pipeline:   
-        print(f"Time coverage: {time_coverage}")
-        print(f"Time conformance: {time_conformance}")
-        yield set_a, set_b, event_log, other_computations, report
+        times["similarity_total"] = time_similarity
+        times["coverage_total"] = time_coverage
+        times["conformance_total"] = time_conformance
+
+        yield set_a, set_b, event_log, other_computations, report, times

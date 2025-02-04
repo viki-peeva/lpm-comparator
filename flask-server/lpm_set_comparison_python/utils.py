@@ -27,8 +27,8 @@ def get_traces_from_event_log(event_log):
 
 def get_subtraces_for_model(traces, model: LPM):
     #Return a list of subtraces that start with an event that is a start event in the model and end with an event that is an end event in the model
-    start_activities = set([trace[0] for trace in model.get_traces()])
-    end_activities = set([trace[-1] for trace in model.get_traces()])
+    start_activities = set([trace[0] for trace in model.get_traces() if len(trace) > 0])
+    end_activities = set([trace[-1] for trace in model.get_traces() if len(trace) > 0])
 
     subtraces = []
     for trace in traces:
@@ -96,4 +96,6 @@ def graph_edit_distance(g1: nx.DiGraph, g2: nx.DiGraph, timeout=None):
             return 0
         return int(n1["label"] != n2["label"])
 
-    return nx.graph_edit_distance(g1, g2, node_subst_cost=node_cost, timeout=1)
+    if timeout > 1:
+        print("Timeout: ", timeout)
+    return nx.graph_edit_distance(g1, g2, node_subst_cost=node_cost, timeout=timeout)

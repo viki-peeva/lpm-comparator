@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import time
 from file_importer import convert_stored_pnml_files, convert_stored_xes_file
 from lpm_set_comparison_python.main import calculate_report
 from file_storage import export_from_objects
@@ -27,6 +28,8 @@ def main():
     
     print("Configurations read successfully.")
 
+    times = {}
+
     for config in configs:
         print(f"Processing configuration: {config["output"]}")
 
@@ -42,9 +45,12 @@ def main():
         traces = convert_stored_xes_file(xes_file)
 
         print("Processing data...")
-
+        start_time = time.perf_counter()
         gen_obj = calculate_report(lpms_a, lpms_b, traces, "id", pipeline=True)
-        [set_a, set_b, event_log, other_computations, report] = next(gen_obj)
+        [set_a, set_b, event_log, other_computations, report, report_times] = next(gen_obj)
+        report_times["total_time"] = time.perf_counter() - start_time
+
+        times[config["output"]] = report_times
 
         print("Data processed successfully.")
 
@@ -54,6 +60,8 @@ def main():
         with open(f"pipeline/reports/{config["output"]}.json", "w") as file:
             json.dump(json_export, file)
 
+    with open("pipeline/times.json", "w") as file:
+        json.dump(times, file)
 
 if __name__ == '__main__':
     print("Starting pipeline script...")
