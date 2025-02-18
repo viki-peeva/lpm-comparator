@@ -17,6 +17,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReportData } from '@/types/Report';
 
+export type matchings = 'leven_sym' | 'leven_asym_1' | 'leven_asym_2' | 'ged_sym';
+
 export default function EvaluationReport({ report }: { report: ReportData }) {
   return (
     <div className="flex flex-col md:flex-row gap-4 w-full">
@@ -29,7 +31,7 @@ export default function EvaluationReport({ report }: { report: ReportData }) {
 const DominanceCountingCard = ({ report }: { report: ReportData }) => {
   const [isFitness, setIsFitness] = useState(true);
   const [similarityType, setSimilarityType] = useState<
-    'leven_sym' | 'leven_asym_1' | 'leven_asym_2'
+    matchings
   >('leven_sym');
 
   const evaluation = isFitness
@@ -87,7 +89,7 @@ const DominanceCountingCard = ({ report }: { report: ReportData }) => {
               value={similarityType}
               onValueChange={(v) =>
                 setSimilarityType(
-                  v as 'leven_sym' | 'leven_asym_1' | 'leven_asym_2',
+                  v as matchings,
                 )
               }
             >
@@ -101,6 +103,9 @@ const DominanceCountingCard = ({ report }: { report: ReportData }) => {
                 </SelectItem>
                 <SelectItem value="leven_asym_2">
                   Levenshtein Asymmetric 2
+                </SelectItem>
+                <SelectItem value="ged_sym">
+                  GED Symmetric
                 </SelectItem>
               </SelectContent>
             </Select>

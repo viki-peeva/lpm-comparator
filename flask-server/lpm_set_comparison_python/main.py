@@ -18,6 +18,22 @@ def calculate_report(
     # Create a dictionary to store the results of the comparison
     times = {}
     report = {}
+
+    #Compute traces of LPMs first to not add time to similarity unnecessarily
+    start_trace_a_time = time.perf_counter()
+    for lpm in set_a.lpms:
+        lpm.get_traces()
+    
+    times["traces_a"] = time.perf_counter() - start_trace_a_time
+    print("Computed traces for set A")
+    
+    start_trace_b_time = time.perf_counter()
+    for lpm in set_b.lpms:
+        lpm.get_traces()
+    
+    times["traces_b"] = time.perf_counter() - start_trace_b_time
+    print("Computed traces for set B")
+
     if not pipeline:
         yield f"data: {json.dumps({'state': 'IN_PROGRESS', 'message': 'Computing similarity...'})}\n\n"
     start_similarity_time = time.perf_counter()

@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { matchings } from '@/pages/analysis/Evaluation';
 
 export function MatchingDetailsDialog({
   report,
@@ -25,9 +26,9 @@ export function MatchingDetailsDialog({
   report: ReportData;
   isFitness: boolean;
   setIsFitness: React.Dispatch<React.SetStateAction<boolean>>;
-  similarityType: 'leven_sym' | 'leven_asym_1' | 'leven_asym_2';
+  similarityType: matchings ;
   setSimilarityType: React.Dispatch<
-    React.SetStateAction<'leven_sym' | 'leven_asym_1' | 'leven_asym_2'>
+    React.SetStateAction<matchings>
   >;
 }) {
   const [isFitness, setLocalIsFitness] = useState(initialIsFitness);
@@ -93,10 +94,10 @@ export function MatchingDetailsDialog({
           value={similarityType}
           onValueChange={(v) => {
             setLocalSimilarityType(
-              v as 'leven_sym' | 'leven_asym_1' | 'leven_asym_2',
+              v as matchings,
             );
             setSimilarityType(
-              v as 'leven_sym' | 'leven_asym_1' | 'leven_asym_2',
+              v as matchings,
             );
           }}
         >
@@ -110,6 +111,9 @@ export function MatchingDetailsDialog({
             </SelectItem>
             <SelectItem value="leven_asym_2">
               Levenshtein Asymmetric 2
+            </SelectItem>
+            <SelectItem value="ged_sym">
+              GED Symmetric
             </SelectItem>
           </SelectContent>
         </Select>

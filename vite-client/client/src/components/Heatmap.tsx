@@ -88,6 +88,7 @@ const MyResponsiveHeatMap = ({ data }: { data: any }) => {
         type: 'quantize',
         scheme: 'blues',
         steps: 10,
+        domain: [0, 1]
       }}
       emptyColor={themeColors.background}
       margin={{ top: 120, right: 120, bottom: 120, left: 120 }}

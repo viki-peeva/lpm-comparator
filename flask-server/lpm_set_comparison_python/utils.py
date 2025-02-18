@@ -1,3 +1,4 @@
+import concurrent
 from pm4py.objects.log.obj import EventLog, Trace, Event
 from typing import List, Tuple
 from lpm_set_comparison_python.lpm import LPM
@@ -30,6 +31,12 @@ def get_subtraces_for_model(traces, model: LPM):
     start_activities = set([trace[0] for trace in model.get_traces() if len(trace) > 0])
     end_activities = set([trace[-1] for trace in model.get_traces() if len(trace) > 0])
 
+    if model.name == "LPM5.pnml":
+        print("Start activities: ", start_activities)
+        print("End activities: ", end_activities)
+        print("Traces: ", model.get_traces())
+        print("Model: ", model)
+
     subtraces = []
     for trace in traces:
         start_indices = [i for i, event in enumerate(trace) if event in start_activities]
@@ -42,6 +49,7 @@ def get_subtraces_for_model(traces, model: LPM):
                 elif start_idx == end_idx:
                     subtraces.append(get_projected_trace_on_model([trace[start_idx]], model))
     
+   
     return subtraces
 
 
@@ -99,3 +107,15 @@ def graph_edit_distance(g1: nx.DiGraph, g2: nx.DiGraph, timeout=None):
     if timeout > 1:
         print("Timeout: ", timeout)
     return nx.graph_edit_distance(g1, g2, node_subst_cost=node_cost, timeout=timeout)
+
+def run_with_timeout(func, timeout, *args, **kwargs):
+    with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(func, *args, **kwargs)
+        try:
+            # Wait for the function to complete or timeout.
+            result = future.result(timeout=timeout)
+            return result
+        except concurrent.futures.TimeoutError:
+            # Cancel the function if it exceeds the timeout.
+            executor.shutdown(wait=False, cancel_futures=True)
+            raise TimeoutError(f"Function call timed out after {timeout} seconds")

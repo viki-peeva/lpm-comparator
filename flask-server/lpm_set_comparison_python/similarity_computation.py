@@ -6,7 +6,7 @@ from scipy.optimize import linear_sum_assignment
 from difflib import SequenceMatcher
 from pm4py.algo.clustering.trace_attribute_driven.leven_dist.leven_dist_calc import leven_preprocess
 import networkx as nx
-from .utils import graph_edit_distance
+from .utils import graph_edit_distance, run_with_timeout
 import time
 
 def compute_trace_similarity_perfect(lpm_a: LPM | LPMSet, lpm_b: LPM | LPMSet):
@@ -62,7 +62,7 @@ def compute_transition_adjancency_similarity(lpm_a: LPM | LPMSet, lpm_b: LPM | L
     
     return 2 * len(intersection_tar) / denominator
 
-def compute_normalized_ged_sim(lpm_a: LPM, lpm_b: LPM, timeout=0.5):
+def compute_normalized_ged_sim(lpm_a: LPM, lpm_b: LPM, timeout=1):
     g1 = lpm_a.get_graph()
     g2 = lpm_b.get_graph()
     
@@ -116,6 +116,8 @@ def create_asymmetric_optimal_matching(similarity_matrix: np.ndarray):
     """
     matches = []
     for i in range(similarity_matrix.shape[0]):
+        if len(similarity_matrix[i]) == 0:
+            continue
         j = int(np.argmax(similarity_matrix[i]))
         matches.append((i, j))
     return matches
@@ -132,9 +134,27 @@ def compute_similarity_measures(set_a: LPMSet, set_b: LPMSet):
 
     print("Computing similarity measures")
     time_1 = time.perf_counter()
-    similarity_matrix_leven = compute_pairwise_similarity_measures(set_a, set_b, compute_trace_similarity_leven)
+    
+    try:
+        # Set a timeout of 2 seconds (adjust as needed).
+        similarity_matrix_leven = run_with_timeout(compute_pairwise_similarity_measures, timeout=1800, set_a=set_a, set_b=set_b, similarity_fn=compute_trace_similarity_leven)
+        trace_similarity_time = time.perf_counter() - time_1
+    except TimeoutError as e:
+        similarity_matrix_leven = [[]]
+        trace_similarity_time = "Timeout"
+        print("Timeout levenshtein")
+
+    #similarity_matrix_leven = compute_pairwise_similarity_measures(set_a, set_b, compute_trace_similarity_leven)
     time_2 = time.perf_counter()
-    overall_trace_sim = compute_trace_similarity_leven(set_a, set_b),
+    try:
+        # Set a timeout of 2 seconds (adjust as needed).
+        overall_trace_sim = run_with_timeout(compute_trace_similarity_leven, timeout=1800, lpm_a=set_a, lpm_b=set_b)
+        overall_trace_sim_time = time.perf_counter() - time_2
+    except TimeoutError as e:
+        overall_trace_sim = [[]]
+        overall_trace_sim_time = "Timeout"
+        print("Timeout levenshtein overall")
+    print(f"Trace sim: {overall_trace_sim}")
     time_3 = time.perf_counter()
     print("Computed trace similarity")
     similarity_matrix_eventually_follows = compute_pairwise_similarity_measures(set_a, set_b, compute_eventually_follows_similarity)
@@ -153,26 +173,36 @@ def compute_similarity_measures(set_a: LPMSet, set_b: LPMSet):
     time_9 = time.perf_counter()
 
     print("\n\n\n\nComputing GED similarity")
-    similarity_matrix_ged = compute_pairwise_similarity_measures(set_a, set_b, compute_normalized_ged_sim)
-    time_10 = time.perf_counter()
+    try:
+        similarity_matrix_ged = run_with_timeout(compute_pairwise_similarity_measures, timeout=3600, set_a=set_a, set_b=set_b, similarity_fn=compute_normalized_ged_sim)
+        ged_similarity_time = time.perf_counter() - time_9
+    except TimeoutError as e:
+        similarity_matrix_ged = [[]]
+        ged_similarity_time = "Timeout"
+        print("Timeout ged")
 
     #Estimate ged time without timeout
     time_for_approx_ged = 0
-    for i in range(10):
+    for i in range(5):
         random_lpm_a = set_a.lpms[random.randint(0, len(set_a.lpms)-1)]
         random_lpm_b = set_b.lpms[random.randint(0, len(set_b.lpms)-1)]
         time_start = time.perf_counter()
         compute_normalized_ged_sim(random_lpm_a, random_lpm_b, timeout=600)
         time_for_approx_ged += time.perf_counter() - time_start
-    time_for_approx_ged /= 10
+    time_for_approx_ged /= 5
     time_for_approx_ged *= (len(set_a.lpms) * len(set_b.lpms))
-
+    
     #Create matchings
     matchings = {}
     similarity_matrix_leven_np = np.array(similarity_matrix_leven)
     matchings["leven_sym"] = create_symmetric_optimal_matching(similarity_matrix_leven_np)
     matchings["leven_asym_1"] = create_asymmetric_optimal_matching(similarity_matrix_leven_np)
     #matchings["leven_asym_2"] = create_asymmetric_optimal_matching(simlarity_matrix_leven.T)
+
+    similarity_matrix_ged_np = np.array(similarity_matrix_ged)
+    matchings["ged_sym"] = create_symmetric_optimal_matching(similarity_matrix_ged_np)
+
+    overall_ged = sum([similarity_matrix_ged_np[x,y] for x,y in matchings["ged_sym"]]) / len(matchings["ged_sym"])
     
     results = {
         "trace_similarity": {
@@ -192,20 +222,21 @@ def compute_similarity_measures(set_a: LPMSet, set_b: LPMSet):
             "matrix": similarity_matrix_tar
         },
         "ged_similarity": {
+            "overall": overall_ged,
             "matrix": similarity_matrix_ged
         }
     }
 
     times = {
-        "trace_similarity": time_2 - time_1,
-        "overall_trace_sim": time_3 - time_2,
+        "trace_similarity": trace_similarity_time,
+        "overall_trace_sim": overall_trace_sim_time,
         "eventually_follows_similarity": time_4 - time_3,
         "overall_eventually_follows_sim": time_5 - time_4,
         "trace_similarity_perfect": time_6 - time_5,
         "overall_trace_sim_perfect": time_7 - time_6,
         "transition_adjacency_similarity": time_8 - time_7,
         "overall_tar_sim": time_9 - time_8,
-        "ged_similarity_capped": time_10 - time_9,
+        "ged_similarity_capped": ged_similarity_time,
         "approx_ged": time_for_approx_ged
     }
 

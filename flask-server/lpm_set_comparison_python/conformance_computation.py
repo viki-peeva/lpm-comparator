@@ -116,14 +116,27 @@ def compute_conformance_measures_multi_processing(set_a: LPMSet, set_b: LPMSet, 
         lpm.fitness = fitness_precision_b[i][0]
         lpm.precision = fitness_precision_b[i][1]
 
-    fitness_times_a = [val[2] for val in fitness_precision_a]
-    avg_fitness_time_a = sum(fitness_times_a) / len(fitness_times_a)
-    precision_times_a = [val[3] for val in fitness_precision_a]
-    avg_precision_time_a = sum(precision_times_a) / len(precision_times_a)
-    fitness_times_b = [val[2] for val in fitness_precision_b]
-    avg_fitness_time_b = sum(fitness_times_b) / len(fitness_times_b)
-    precision_times_b = [val[3] for val in fitness_precision_b]
-    avg_precision_time_b = sum(precision_times_b) / len(precision_times_b)
+    if len(fitness_precision_a) > 0:
+        fitness_times_a = [val[2] for val in fitness_precision_a]
+        avg_fitness_time_a = sum(fitness_times_a) / len(fitness_times_a)
+        precision_times_a = [val[3] for val in fitness_precision_a]
+        avg_precision_time_a = sum(precision_times_a) / len(precision_times_a)
+    else:
+        avg_fitness_time_a = 0
+        avg_precision_time_a = 0
+        fitness_times_a = []
+        precision_times_a = []
+    
+    if len(fitness_precision_b) > 0:
+        fitness_times_b = [val[2] for val in fitness_precision_b]
+        avg_fitness_time_b = sum(fitness_times_b) / len(fitness_times_b)
+        precision_times_b = [val[3] for val in fitness_precision_b]
+        avg_precision_time_b = sum(precision_times_b) / len(precision_times_b)
+    else:
+        avg_fitness_time_b = 0
+        avg_precision_time_b = 0
+        fitness_times_b = []
+        precision_times_b = []
 
     times = {
         "fitness_precision_a": time_2 - time_1,
@@ -148,15 +161,29 @@ def compute_conformance_measures(set_a: LPMSet, set_b: LPMSet, traces: List[Tupl
     time_2 = time.perf_counter()
     fitness_precision_b = list(map(partial_fitness_precision_on_traces, set_b.lpms))
     time_3 = time.perf_counter()
-    
-    fitness_times_a = [val[2] for val in fitness_precision_a]
-    avg_fitness_time_a = sum(fitness_times_a) / len(fitness_times_a)
-    precision_times_a = [val[3] for val in fitness_precision_a]
-    avg_precision_time_a = sum(precision_times_a) / len(precision_times_a)
-    fitness_times_b = [val[2] for val in fitness_precision_b]
-    avg_fitness_time_b = sum(fitness_times_b) / len(fitness_times_b)
-    precision_times_b = [val[3] for val in fitness_precision_b]
-    avg_precision_time_b = sum(precision_times_b) / len(precision_times_b)
+
+    if len(fitness_precision_a) > 0:
+        print(fitness_precision_a)
+        fitness_times_a = [val[2] for val in fitness_precision_a]
+        avg_fitness_time_a = sum(fitness_times_a) / len(fitness_times_a)
+        precision_times_a = [val[3] for val in fitness_precision_a]
+        avg_precision_time_a = sum(precision_times_a) / len(precision_times_a)
+    else:
+        avg_fitness_time_a = 0
+        avg_precision_time_a = 0
+        fitness_times_a = []
+        precision_times_a = []
+
+    if len(fitness_precision_b) > 0:
+        fitness_times_b = [val[2] for val in fitness_precision_b]
+        avg_fitness_time_b = sum(fitness_times_b) / len(fitness_times_b)
+        precision_times_b = [val[3] for val in fitness_precision_b]
+        avg_precision_time_b = sum(precision_times_b) / len(precision_times_b)
+    else:
+        avg_fitness_time_b = 0
+        avg_precision_time_b = 0
+        fitness_times_b = []
+        precision_times_b = []
 
     times = {
         "fitness_precision_a": time_2 - time_1,
@@ -311,7 +338,7 @@ def compute_fitness_precision_on_subtraces(model: LPM, traces, use_TBR=True):
     if len(subtraces) == 0:
         model.fitness = 0
         model.precision = 0
-        return 0, 0
+        return 0, 0, 0, 0
     
     print(f"Length of subtraces: {len(subtraces)}")
     print(f"Number variants: {len(set(subtraces))}")

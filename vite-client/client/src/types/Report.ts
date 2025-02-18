@@ -34,6 +34,7 @@ interface Evaluation {
     leven_sym?: DominanceCount;
     leven_asym_1?: DominanceCount;
     leven_asym_2?: DominanceCount;
+    ged_sym?: DominanceCount;
   };
   rank_aggregation?: {
     rank_sum_a?: number;

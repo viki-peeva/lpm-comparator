@@ -31,6 +31,7 @@ class LPM:
     def get_log(self):
         if self.log is None:
             self.log =  find_traces(self.net, self.im, self.fm, parameters={"MAX_TRACE_LENGTH": 7})
+            print(f"Found traces for:{self.name}")
         
         return self.log
     
@@ -130,6 +131,7 @@ class LPMSet:
                 combined_traces = combined_traces.union(lpm.get_traces())
             self.combined_traces = combined_traces
 
+        print(self.combined_traces)
         return self.combined_traces
     
     def get_eventually_follows_set(self):
