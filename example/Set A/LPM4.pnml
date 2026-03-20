@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+  <net id="LPM4" type="http://www.pnml.org/version-2009/grammar/ptnet">
+    <name>
+      <text>LPM 4: Investigate - Diagnose</text>
+    </name>
+    <page id="page1">
+      <!-- Places -->
+      <place id="c0">
+        <name><text>Start</text></name>
+        <initialMarking><text>1</text></initialMarking>
+        <graphics><position x="50" y="300"/></graphics>
+      </place>
+      <place id="c1">
+        <name><text>After Investigate</text></name>
+        <graphics><position x="150" y="300"/></graphics>
+      </place>
+      <place id="c2">
+        <name><text>End</text></name>
+        <graphics><position x="250" y="300"/></graphics>
+      </place>
+      <!-- Transitions -->
+      <transition id="t1">
+        <name><text>Investigate</text></name>
+        <graphics><position x="100" y="280"/></graphics>
+      </transition>
+      <transition id="t5">
+        <name><text>Diagnose</text></name>
+        <graphics><position x="200" y="280"/></graphics>
+      </transition>
+      <!-- Arcs -->
+      <arc id="a1" source="c0" target="t1">
+        <inscription><text>1</text></inscription>
+      </arc>
+      <arc id="a2" source="t1" target="c1">
+        <inscription><text>1</text></inscription>
+      </arc>
+      <arc id="a3" source="c1" target="t5">
+        <inscription><text>1</text></inscription>
+      </arc>
+      <arc id="a4" source="t5" target="c2">
+        <inscription><text>1</text></inscription>
+      </arc>
+    </page>
+     <finalmarkings><marking><place idref="c0"><text>0</text></place><place idref="c1"><text>0</text></place><place idref="c2"><text>1</text></place></marking></finalmarkings>
+  </net>
+</pnml>

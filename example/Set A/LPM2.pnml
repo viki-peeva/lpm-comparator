@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+  <net id="LPM2" type="http://www.pnml.org/version-2009/grammar/ptnet">
+    <name>
+      <text>LPM 2: Report - Diagnose - Fix - Close</text>
+    </name>
+    <page id="page1">
+      <!-- Places -->
+      <place id="b0">
+        <name><text>Start</text></name>
+        <initialMarking><text>1</text></initialMarking>
+        <graphics><position x="50" y="250"/></graphics>
+      </place>
+      <place id="b1">
+        <name><text>After Diagnose</text></name>
+        <graphics><position x="250" y="250"/></graphics>
+      </place>
+      <place id="b2">
+        <name><text>After Fix</text></name>
+        <graphics><position x="350" y="250"/></graphics>
+      </place>
+      <place id="b3">
+        <name><text>End</text></name>
+        <graphics><position x="450" y="250"/></graphics>
+      </place>
+      <!-- Transitions -->
+      <transition id="t1">
+        <name><text>Diagnose</text></name>
+        <graphics><position x="100" y="230"/></graphics>
+      </transition>
+      <transition id="t2">
+        <name><text>Fix</text></name>
+        <graphics><position x="200" y="230"/></graphics>
+      </transition>
+      <transition id="t3">
+        <name><text>Close</text></name>
+        <graphics><position x="300" y="230"/></graphics>
+      </transition>
+  
+      <!-- Arcs -->
+      <arc id="a1" source="b0" target="t1">
+        <inscription><text>1</text></inscription>
+      </arc>
+      <arc id="a2" source="t1" target="b1">
+        <inscription><text>1</text></inscription>
+      </arc>
+      <arc id="a3" source="b1" target="t2">
+        <inscription><text>1</text></inscription>
+      </arc>
+      <arc id="a4" source="t2" target="b2">
+        <inscription><text>1</text></inscription>
+      </arc>
+      <arc id="a5" source="b2" target="t3">
+        <inscription><text>1</text></inscription>
+      </arc>
+      <arc id="a6" source="t3" target="b3">
+        <inscription><text>1</text></inscription>
+      </arc>
+    </page>
+    <finalmarkings><marking><place idref="b0"><text>0</text></place><place idref="b1"><text>0</text></place><place idref="b2"><text>0</text></place><place idref="b3"><text>1</text></place></marking></finalmarkings>
+  </net>
+</pnml>
